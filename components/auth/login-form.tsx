@@ -38,7 +38,7 @@ export function LoginForm() {
           error={state?.errors?.password?.[0]}
         />
         {state?.message && (
-          <p className="text-sm text-red-600 dark:text-red-400">{state.message}</p>
+          <p className="text-sm text-red-600">{state.message}</p>
         )}
         <Button type="submit" disabled={pending} size="lg" className="w-full">
           {pending ? 'Anmelden...' : 'Anmelden'}
@@ -47,10 +47,10 @@ export function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-zinc-300 dark:border-zinc-700" />
+          <div className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="bg-[#f8fafc] px-2 text-slate-400 lg:bg-white">
             oder
           </span>
         </div>
