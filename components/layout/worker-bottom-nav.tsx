@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const WORKER_TABS = [
   { href: '/stempeln', label: 'Stempeln' },
+  { href: '/zeiten', label: 'Meine Zeiten' },
   { href: '/profil', label: 'Profil' },
 ]
 

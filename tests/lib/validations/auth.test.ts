@@ -68,6 +68,8 @@ describe('loginSchema', () => {
 describe('acceptInviteSchema', () => {
   it('accepts valid invite acceptance', () => {
     const result = acceptInviteSchema.safeParse({
+      first_name: 'Hans',
+      last_name: 'Arbeiter',
       email: 'arbeiter@email.de',
       password: 'mein-passwort-123',
     })

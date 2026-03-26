@@ -89,6 +89,8 @@ export async function acceptInvite(
   formData: FormData
 ): Promise<AuthState> {
   const raw = {
+    first_name: formData.get('first_name'),
+    last_name: formData.get('last_name'),
     email: formData.get('email'),
     password: formData.get('password'),
   }
@@ -98,7 +100,7 @@ export async function acceptInvite(
     return { errors: validated.error.flatten().fieldErrors }
   }
 
-  const { email, password } = validated.data
+  const { first_name, last_name, email, password } = validated.data
 
   // Use admin client to read invitation (unauthenticated user)
   const admin = createAdminClient()
@@ -123,8 +125,8 @@ export async function acceptInvite(
         flow: 'invite',
         company_id: invitation.company_id,
         role: invitation.role,
-        first_name: formData.get('first_name') || '',
-        last_name: formData.get('last_name') || '',
+        first_name: validated.data.first_name,
+        last_name: validated.data.last_name,
         invited_by: invitation.created_by,
       },
     },
@@ -135,10 +137,15 @@ export async function acceptInvite(
   }
 
   // Mark invitation as accepted
-  await admin
+  const { count } = await admin
     .from('invitations')
     .update({ accepted_at: new Date().toISOString() })
     .eq('id', invitation.id)
+    .is('accepted_at', null)
+
+  if (count === 0) {
+    return { message: 'Einladung wurde bereits angenommen' }
+  }
 
   const destination = invitation.role === 'worker' ? '/stempeln' : '/dashboard'
   redirect(destination)
