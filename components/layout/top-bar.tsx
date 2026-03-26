@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { LogOut, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function TopBar({
@@ -20,19 +21,21 @@ export function TopBar({
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm">
       <div className="flex items-center gap-3">
-        <span className="text-lg font-bold">BuildTime</span>
-        <span className="hidden text-sm text-zinc-500 dark:text-zinc-400 sm:inline">
+        <span className="text-lg font-bold text-[--color-primary]">Build<span className="text-[--color-accent]">Time</span></span>
+        <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
+          <Building2 className="h-3.5 w-3.5" />
           {companyName}
-        </span>
+        </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="hidden text-sm text-zinc-600 dark:text-zinc-400 sm:inline">
+        <span className="hidden text-sm text-slate-600 sm:inline">
           {userName}
         </span>
         <Button variant="ghost" size="sm" onClick={handleLogout}>
-          Abmelden
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline">Abmelden</span>
         </Button>
       </div>
     </header>

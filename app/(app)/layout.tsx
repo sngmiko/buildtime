@@ -42,8 +42,16 @@ export default async function AppLayout({
       <TopBar userName={userName} companyName={companyName} />
       <div className="flex flex-1">
         {!isWorker && <ManagerSidebar role={profile.role} />}
-        <main className={`flex flex-1 flex-col p-4 md:p-6 ${isWorker ? 'pb-20 md:pb-6' : ''}`}>
+        <main className={`flex flex-1 flex-col p-4 md:p-6 ${isWorker ? 'pb-24 md:pb-6' : ''}`}>
           {children}
+          {!isWorker && (
+            <footer className="mt-auto pt-8 text-center text-xs text-slate-400">
+              BuildTime ist ein Produkt von{' '}
+              <a href="https://nomad-solutions.de" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
+                Nomad Solutions
+              </a>
+            </footer>
+          )}
         </main>
       </div>
       {isWorker && <WorkerBottomNav />}

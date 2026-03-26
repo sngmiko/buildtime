@@ -2,34 +2,43 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Clock, CalendarDays, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
-const WORKER_TABS = [
-  { href: '/stempeln', label: 'Stempeln' },
-  { href: '/zeiten', label: 'Meine Zeiten' },
-  { href: '/profil', label: 'Profil' },
+const WORKER_TABS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/stempeln', label: 'Stempeln', icon: Clock },
+  { href: '/zeiten', label: 'Meine Zeiten', icon: CalendarDays },
+  { href: '/profil', label: 'Profil', icon: User },
 ]
 
 export function WorkerBottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 md:hidden">
-      {WORKER_TABS.map((tab) => {
-        const active = pathname.startsWith(tab.href)
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`flex flex-1 flex-col items-center justify-center py-3 text-xs font-medium transition-colors ${
-              active
-                ? 'text-zinc-900 dark:text-zinc-100'
-                : 'text-zinc-500 dark:text-zinc-400'
-            }`}
-          >
-            {tab.label}
-          </Link>
-        )
-      })}
-    </nav>
+    <div className="fixed inset-x-0 bottom-0 z-30 md:hidden">
+      <nav className="flex border-t border-slate-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        {WORKER_TABS.map((tab) => {
+          const active = pathname.startsWith(tab.href)
+          const Icon = tab.icon
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`flex flex-1 flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
+                active
+                  ? 'text-[--color-primary]'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <Icon className={`h-5 w-5 ${active ? 'text-[--color-primary]' : ''}`} />
+              {tab.label}
+            </Link>
+          )
+        })}
+      </nav>
+      <div className="bg-white pb-[env(safe-area-inset-bottom)] text-center text-[10px] text-slate-300">
+        by Nomad Solutions
+      </div>
+    </div>
   )
 }

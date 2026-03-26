@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'BuildTime',
-  description: 'ERP-Light für Bauunternehmer',
+  title: 'BuildTime — Zeiterfassung für die Baustelle',
+  description: 'Digitale Zeiterfassung, Baustellenverwaltung und ERP-Light für Bauunternehmer in Deutschland.',
 }
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="de"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+      <body className="min-h-full flex flex-col bg-[#f8fafc] font-sans text-slate-900">
         {children}
       </body>
     </html>

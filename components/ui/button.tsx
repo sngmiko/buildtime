@@ -1,17 +1,19 @@
 import { type ButtonHTMLAttributes } from 'react'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'accent'
   size?: 'sm' | 'md' | 'lg'
 }
 
 const variants = {
   primary:
-    'bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200',
+    'bg-[--color-primary] text-white hover:bg-[--color-primary-light] shadow-sm',
   secondary:
-    'border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800',
+    'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-sm',
   ghost:
-    'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
+    'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+  accent:
+    'bg-[--color-accent] text-white hover:bg-[--color-accent-dark] shadow-sm',
 }
 
 const sizes = {
@@ -29,7 +31,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:pointer-events-none disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--color-primary] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled}
       {...props}
     />
