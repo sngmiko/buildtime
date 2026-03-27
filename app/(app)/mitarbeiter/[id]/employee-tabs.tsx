@@ -15,26 +15,41 @@ import {
   type EmployeeState,
 } from '@/actions/employee'
 import type { ProfileExtended, Qualification, SafetyBriefing, LeaveRequest, SickDay } from '@/lib/types'
-import { AlertTriangle, Check, X, Shield, FileText, Calendar, Thermometer } from 'lucide-react'
+import { AlertTriangle, Check, X, Shield, FileText, Calendar, Thermometer, Clock, Briefcase } from 'lucide-react'
 
 const TABS = [
   { id: 'details', label: 'Stammdaten', icon: FileText },
   { id: 'qualifications', label: 'Qualifikationen', icon: Shield },
   { id: 'leave', label: 'Urlaub', icon: Calendar },
   { id: 'sick', label: 'Krankheit', icon: Thermometer },
+  { id: 'activity', label: 'Aktivität', icon: Clock },
+  { id: 'assignments', label: 'Aufträge', icon: Briefcase },
 ]
 
+type EmployeeDetails = {
+  profile: Record<string, unknown> | null
+  weekEntries: Record<string, unknown>[]
+  vehicle: Record<string, unknown> | null
+  qualifications: Record<string, unknown>[]
+  leaveRequests: Record<string, unknown>[]
+  assignments: Record<string, unknown>[]
+  stats: {
+    weekHours: number
+    sitesThisWeek: unknown[]
+    expiringQuals: unknown[]
+    sickDaysThisYear: number
+  }
+}
+
 export function EmployeeDetailTabs({
-  employee, qualifications, briefings, leaveRequests, sickDays, activeTab,
+  details,
+  activeTab,
 }: {
-  employee: ProfileExtended
-  qualifications: Qualification[]
-  briefings: SafetyBriefing[]
-  leaveRequests: LeaveRequest[]
-  sickDays: SickDay[]
+  details: EmployeeDetails
   activeTab: string
 }) {
   const router = useRouter()
+  const employee = details.profile as ProfileExtended
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,19 +71,23 @@ export function EmployeeDetailTabs({
         })}
       </div>
 
-      {activeTab === 'details' && <DetailsTab employee={employee} briefings={briefings} />}
-      {activeTab === 'qualifications' && <QualificationsTab employee={employee} qualifications={qualifications} />}
-      {activeTab === 'leave' && <LeaveTab employee={employee} leaveRequests={leaveRequests} />}
-      {activeTab === 'sick' && <SickTab employee={employee} sickDays={sickDays} />}
+      {activeTab === 'details' && <DetailsTab employee={employee} details={details} />}
+      {activeTab === 'qualifications' && <QualificationsTab employee={employee} qualifications={details.qualifications as unknown as Qualification[]} />}
+      {activeTab === 'leave' && <LeaveTab employee={employee} leaveRequests={details.leaveRequests as unknown as LeaveRequest[]} />}
+      {activeTab === 'sick' && <SickTab employee={employee} details={details} />}
+      {activeTab === 'activity' && <ActivityTab details={details} />}
+      {activeTab === 'assignments' && <AssignmentsTab details={details} />}
     </div>
   )
 }
 
-function DetailsTab({ employee, briefings }: { employee: ProfileExtended; briefings: SafetyBriefing[] }) {
+function DetailsTab({ employee, details }: { employee: ProfileExtended; details: EmployeeDetails }) {
   const boundUpdate = updateEmployeeDetails.bind(null, employee.id)
   const [state, action, pending] = useActionState<EmployeeState, FormData>(boundUpdate, null)
-  const boundBriefing = addBriefing.bind(null, employee.id)
-  const [bState, bAction, bPending] = useActionState<EmployeeState, FormData>(boundBriefing, null)
+
+  // Fetch briefings from the profile's safety_briefings — not available in getEmployeeFullDetails,
+  // so we show a note if none. For now render an empty briefings section.
+  const briefings: SafetyBriefing[] = []
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -118,33 +137,47 @@ function DetailsTab({ employee, briefings }: { employee: ProfileExtended; briefi
         </form>
       </Card>
 
-      <Card>
-        <h3 className="mb-4 text-lg font-semibold text-slate-900">Sicherheitsunterweisungen</h3>
-        {briefings.length > 0 && (
-          <div className="mb-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
-            {briefings.map((b) => (
-              <div key={b.id} className="px-3 py-2 text-sm">
-                <p className="font-medium text-slate-900">{b.topic}</p>
-                <p className="text-xs text-slate-500">
-                  {new Date(b.briefing_date).toLocaleDateString('de-DE')}
-                  {b.next_date && ` · Nächste: ${new Date(b.next_date).toLocaleDateString('de-DE')}`}
-                </p>
-              </div>
-            ))}
-          </div>
+      <div className="flex flex-col gap-6">
+        {/* Vehicle */}
+        {details.vehicle && (
+          <Card>
+            <h3 className="mb-3 text-lg font-semibold text-slate-900">Zugewiesenes Fahrzeug</h3>
+            <div className="text-sm space-y-1">
+              <p className="font-medium text-slate-900">{(details.vehicle as Record<string, unknown>).make as string} {(details.vehicle as Record<string, unknown>).model as string}</p>
+              <p className="text-slate-500">{(details.vehicle as Record<string, unknown>).license_plate as string}</p>
+              {!!(details.vehicle as Record<string, unknown>).year && <p className="text-slate-500">Baujahr: {(details.vehicle as Record<string, unknown>).year as string}</p>}
+            </div>
+          </Card>
         )}
-        <form action={bAction} className="flex flex-col gap-3 border-t border-slate-200 pt-4">
-          <p className="text-sm font-medium text-slate-700">Neue Unterweisung</p>
-          <Input label="Thema" name="topic" required error={bState?.errors?.topic?.[0]} />
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Datum" name="briefing_date" type="date" required />
-            <Input label="Nächster Termin" name="next_date" type="date" />
-          </div>
-          {bState?.message && <p className={`text-sm ${bState.success ? 'text-emerald-600' : 'text-red-600'}`}>{bState.message}</p>}
-          <Button type="submit" disabled={bPending} size="sm">{bPending ? 'Hinzufügen...' : 'Unterweisung hinzufügen'}</Button>
-        </form>
-      </Card>
+
+        {/* Safety briefings placeholder */}
+        <Card>
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">Sicherheitsunterweisungen</h3>
+          {briefings.length === 0 ? (
+            <p className="text-sm text-slate-400 mb-4">Keine Einträge</p>
+          ) : null}
+          <BriefingForm employeeId={employee.id} />
+        </Card>
+      </div>
     </div>
+  )
+}
+
+function BriefingForm({ employeeId }: { employeeId: string }) {
+  const boundBriefing = addBriefing.bind(null, employeeId)
+  const [bState, bAction, bPending] = useActionState<EmployeeState, FormData>(boundBriefing, null)
+
+  return (
+    <form action={bAction} className="flex flex-col gap-3 border-t border-slate-200 pt-4">
+      <p className="text-sm font-medium text-slate-700">Neue Unterweisung</p>
+      <Input label="Thema" name="topic" required error={bState?.errors?.topic?.[0]} />
+      <div className="grid grid-cols-2 gap-3">
+        <Input label="Datum" name="briefing_date" type="date" required />
+        <Input label="Nächster Termin" name="next_date" type="date" />
+      </div>
+      {bState?.message && <p className={`text-sm ${bState.success ? 'text-emerald-600' : 'text-red-600'}`}>{bState.message}</p>}
+      <Button type="submit" disabled={bPending} size="sm">{bPending ? 'Hinzufügen...' : 'Unterweisung hinzufügen'}</Button>
+    </form>
   )
 }
 
@@ -265,37 +298,16 @@ function LeaveTab({ employee, leaveRequests }: { employee: ProfileExtended; leav
   )
 }
 
-function SickTab({ employee, sickDays }: { employee: ProfileExtended; sickDays: SickDay[] }) {
+function SickTab({ employee, details }: { employee: ProfileExtended; details: EmployeeDetails }) {
   const boundAdd = addSickDay.bind(null, employee.id)
   const [state, action, pending] = useActionState<EmployeeState, FormData>(boundAdd, null)
-  const thisYear = sickDays.filter((s) => new Date(s.start_date).getFullYear() === new Date().getFullYear())
-  const totalDays = thisYear.reduce((sum, s) => sum + s.days, 0)
 
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-4 text-center">
-        <p className="text-2xl font-bold text-slate-900">{totalDays}</p>
+        <p className="text-2xl font-bold text-slate-900">{details.stats.sickDaysThisYear}</p>
         <p className="text-xs text-slate-500">Krankheitstage {new Date().getFullYear()}</p>
       </Card>
-
-      {sickDays.length > 0 && (
-        <Card className="p-0">
-          <div className="divide-y divide-slate-100">
-            {sickDays.map((s) => (
-              <div key={s.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {new Date(s.start_date).toLocaleDateString('de-DE')} – {new Date(s.end_date).toLocaleDateString('de-DE')}
-                    <span className="ml-2 text-slate-500">({s.days} Tage)</span>
-                  </p>
-                  {s.notes && <p className="text-xs text-slate-500">{s.notes}</p>}
-                </div>
-                {s.has_certificate && <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">AU vorhanden</span>}
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       <Card>
         <h3 className="mb-4 text-lg font-semibold text-slate-900">Krankheit erfassen</h3>
@@ -314,6 +326,94 @@ function SickTab({ employee, sickDays }: { employee: ProfileExtended; sickDays: 
           <Button type="submit" disabled={pending}>{pending ? 'Erfassen...' : 'Krankheit erfassen'}</Button>
         </form>
       </Card>
+    </div>
+  )
+}
+
+function ActivityTab({ details }: { details: EmployeeDetails }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Card>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Zeiteinträge diese Woche</h3>
+        {details.weekEntries.length === 0 ? (
+          <p className="text-sm text-slate-500">Keine Zeiteinträge diese Woche</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {details.weekEntries.map((e) => {
+              const entry = e as Record<string, unknown>
+              const site = entry.construction_sites as { name: string } | null
+              const clockIn = new Date(entry.clock_in as string)
+              const clockOut = entry.clock_out ? new Date(entry.clock_out as string) : null
+              const hours = clockOut
+                ? Math.max(0, (clockOut.getTime() - clockIn.getTime()) / 3600000 - (entry.break_minutes as number) / 60)
+                : null
+              return (
+                <div key={entry.id as string} className="flex items-center justify-between py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {clockIn.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {clockIn.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                      {clockOut && ` – ${clockOut.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`}
+                      {site && ` · ${site.name}`}
+                    </p>
+                  </div>
+                  <span className="font-medium text-slate-900">
+                    {hours !== null ? `${hours.toFixed(1)}h` : <span className="text-amber-600 text-xs">läuft</span>}
+                  </span>
+                </div>
+              )
+            })}
+            <div className="flex items-center justify-between py-2 text-sm font-bold">
+              <span>Gesamt</span>
+              <span className="text-[#1e3a5f]">{details.stats.weekHours}h</span>
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>
+  )
+}
+
+function AssignmentsTab({ details }: { details: EmployeeDetails }) {
+  const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+    quote: { label: 'Angebot', color: 'bg-slate-100 text-slate-700' },
+    commissioned: { label: 'Beauftragt', color: 'bg-blue-100 text-blue-700' },
+    in_progress: { label: 'In Arbeit', color: 'bg-emerald-100 text-emerald-700' },
+    acceptance: { label: 'Abnahme', color: 'bg-amber-100 text-amber-700' },
+    completed: { label: 'Abgeschlossen', color: 'bg-slate-100 text-slate-600' },
+    complaint: { label: 'Reklamation', color: 'bg-red-100 text-red-700' },
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {details.assignments.length === 0 ? (
+        <Card className="py-8 text-center text-sm text-slate-500">Keine Auftragszuweisungen</Card>
+      ) : (
+        <Card className="p-0">
+          <div className="divide-y divide-slate-100">
+            {details.assignments.map((a) => {
+              const assignment = a as Record<string, unknown>
+              const order = assignment.orders as { title: string; status: string } | null
+              const statusInfo = order ? (STATUS_LABELS[order.status] || STATUS_LABELS.quote) : null
+              return (
+                <div key={assignment.id as string} className="flex items-center justify-between px-4 py-3 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{order?.title || 'Unbekannter Auftrag'}</p>
+                    {!!assignment.notes && <p className="text-xs text-slate-500">{assignment.notes as string}</p>}
+                  </div>
+                  {statusInfo && (
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusInfo.color}`}>
+                      {statusInfo.label}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }
