@@ -5,6 +5,7 @@ import { getOrderFullDetails } from '@/lib/queries/order-details'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
 import { OrderDetailTabs } from './order-tabs'
+import { CreateInvoiceButton } from './create-invoice-button'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   quote: { label: 'Angebot', color: 'bg-slate-100 text-slate-700' },
@@ -51,9 +52,12 @@ export default async function OrderDetailPage({
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div className="flex-1">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-slate-900">{details.order.title as string}</h1>
             <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.color}`}>{status.label}</span>
+            <div className="ml-auto">
+              <CreateInvoiceButton orderId={id} />
+            </div>
           </div>
           {details.order.customers && (
             <p className="text-sm text-slate-500">
