@@ -9,6 +9,7 @@ import { getSurcharges } from '@/lib/surcharges'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { TimeEntry } from '@/lib/types'
+import { CSVDownload } from './csv-download'
 
 export default async function ZeitenPage({
   searchParams,
@@ -74,6 +75,7 @@ export default async function ZeitenPage({
               <span className="hidden sm:inline">Drucken</span>
             </Button>
           </Link>
+          <CSVDownload userId={user.id} startDate={start.toISOString()} endDate={end.toISOString()} />
         </div>
       </div>
 

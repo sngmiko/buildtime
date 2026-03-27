@@ -8,6 +8,7 @@ import { getDateRange } from '@/lib/date-utils'
 import { TimeEntryRow, calcNetMinutes, formatHours } from '@/components/time/time-entry-row'
 import { Printer } from 'lucide-react'
 import type { TimeEntry, Profile } from '@/lib/types'
+import { CSVDownload } from '@/app/(app)/zeiten/csv-download'
 
 export default async function ZeitmanagementPage({
   searchParams,
@@ -79,6 +80,7 @@ export default async function ZeitmanagementPage({
               <Printer className="h-4 w-4" />
             </Button>
           </Link>
+          <CSVDownload userId={selectedUserId || user.id} startDate={start.toISOString()} endDate={end.toISOString()} />
         </div>
       </div>
 
