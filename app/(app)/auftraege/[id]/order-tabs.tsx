@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useActionState } from 'react'
 import { addOrderItem, addOrderCost, type OrdersState } from '@/actions/orders'
-import { FileText, Calculator, BookOpen, Users, BarChart3 } from 'lucide-react'
+import { createMeasurement, type MeasurementState } from '@/actions/measurements'
+import { FileText, Calculator, BookOpen, Users, BarChart3, Ruler } from 'lucide-react'
 
 const TABS = [
   { id: 'overview', label: 'Übersicht', icon: FileText },
   { id: 'items', label: 'Positionen', icon: BarChart3 },
   { id: 'costs', label: 'Kosten', icon: Calculator },
+  { id: 'aufmass', label: 'Aufmaß', icon: Ruler },
+  { id: 'nachkalkulation', label: 'Nachkalkulation', icon: BarChart3 },
   { id: 'diary', label: 'Tagebuch', icon: BookOpen },
   { id: 'team', label: 'Team & Ressourcen', icon: Users },
 ]
@@ -24,6 +27,7 @@ type OrderDetails = {
   timeEntries: Record<string, unknown>[]
   diaryEntries: Record<string, unknown>[]
   subAssignments: Record<string, unknown>[]
+  measurements: Record<string, unknown>[]
   financials: { revenue: number; laborCost: number; externalCosts: number; subCosts: number; totalCosts: number; profit: number; margin: number }
 }
 
@@ -58,6 +62,8 @@ export function OrderDetailTabs({
       {activeTab === 'overview' && <OverviewTab details={details} />}
       {activeTab === 'items' && <ItemsTab details={details} />}
       {activeTab === 'costs' && <CostsTab details={details} workers={workers} />}
+      {activeTab === 'aufmass' && <AufmassTab details={details} />}
+      {activeTab === 'nachkalkulation' && <NachkalkulationTab details={details} />}
       {activeTab === 'diary' && <DiaryTab details={details} />}
       {activeTab === 'team' && <TeamTab details={details} workers={workers} />}
     </div>
@@ -268,6 +274,235 @@ function CostsTab({ details, workers }: { details: OrderDetails; workers: { id: 
           {state?.message && <p className="text-sm text-red-600 sm:col-span-4">{state.message}</p>}
           <div className="sm:col-span-4"><Button type="submit" disabled={pending} size="sm">{pending ? 'Hinzufügen...' : 'Kosten hinzufügen'}</Button></div>
         </form>
+      </Card>
+    </div>
+  )
+}
+
+function AufmassTab({ details }: { details: OrderDetails }) {
+  const orderId = details.order.id as string
+  const boundCreate = createMeasurement.bind(null, orderId)
+  const [state, action, pending] = useActionState<MeasurementState, FormData>(boundCreate, null)
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Existing measurements */}
+      <Card className="p-0">
+        <div className="px-4 py-3 border-b border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-900">Aufmaße ({details.measurements.length})</h3>
+        </div>
+        {details.measurements.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-slate-500">Noch keine Aufmaße erfasst</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-left">
+                <th className="px-4 py-3 font-medium text-slate-500">Beschreibung</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">L</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">B</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">H</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">Menge</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">Einheit</th>
+                <th className="px-4 py-3 font-medium text-slate-500 text-right">Berechnet</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {details.measurements.map((m) => (
+                <tr key={m.id as string}>
+                  <td className="px-4 py-3 font-medium text-slate-900">
+                    {m.description as string}
+                    {!!(m.notes) && <p className="text-xs text-slate-400 font-normal">{m.notes as string}</p>}
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.length != null ? Number(m.length).toFixed(2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.width != null ? Number(m.width).toFixed(2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.height != null ? Number(m.height).toFixed(2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{Number(m.quantity).toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.unit as string}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                    {Number(m.calculated_value).toFixed(2)} {m.unit as string}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      {/* Add measurement form */}
+      <Card>
+        <h3 className="mb-4 text-lg font-semibold text-slate-900">Aufmaß hinzufügen</h3>
+        <form action={action} className="flex flex-col gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Input label="Beschreibung" name="description" required error={state?.errors?.description?.[0]} />
+            </div>
+            <Input label="Länge (m)" name="length" type="number" step="0.01" min="0" placeholder="z. B. 5.50" />
+            <Input label="Breite (m)" name="width" type="number" step="0.01" min="0" placeholder="z. B. 3.20" />
+            <Input label="Höhe (m)" name="height" type="number" step="0.01" min="0" placeholder="z. B. 2.50" />
+            <Input label="Anzahl" name="quantity" type="number" step="0.01" min="0" defaultValue="1" />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Einheit</label>
+              <select name="unit" className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm">
+                <option value="m2">m² (L×B)</option>
+                <option value="m3">m³ (L×B×H)</option>
+                <option value="m">m (Länge)</option>
+                <option value="stk">Stk</option>
+                <option value="psch">Pauschal</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <Input label="Notizen" name="notes" placeholder="Optionale Anmerkungen..." />
+            </div>
+          </div>
+          {state?.message && (
+            <p className={`text-sm ${state.success ? 'text-emerald-600' : 'text-red-600'}`}>{state.message}</p>
+          )}
+          <Button type="submit" disabled={pending} size="sm">
+            {pending ? 'Speichern...' : 'Aufmaß speichern'}
+          </Button>
+        </form>
+      </Card>
+    </div>
+  )
+}
+
+function NachkalkulationTab({ details }: { details: OrderDetails }) {
+  const f = details.financials
+
+  // Derive SOLL from order items (revenue)
+  const sollRevenue = f.revenue
+
+  // IST breakdown
+  const istLabor = f.laborCost
+  const istMaterial = (details.costs as { category: string; amount: number }[])
+    .filter(c => c.category === 'material')
+    .reduce((s, c) => s + Number(c.amount), 0)
+  const istSub = f.subCosts
+  const istOther = (details.costs as { category: string; amount: number }[])
+    .filter(c => c.category !== 'material')
+    .reduce((s, c) => s + Number(c.amount), 0)
+  const istTotal = f.totalCosts
+  const profit = f.profit
+  const margin = f.margin
+
+  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+
+  const rows: { label: string; soll: string; ist: string; diff: string; diffColor: string }[] = [
+    {
+      label: 'Personalkosten',
+      soll: '–',
+      ist: fmt(istLabor),
+      diff: '–',
+      diffColor: '',
+    },
+    {
+      label: 'Materialkosten',
+      soll: '–',
+      ist: fmt(istMaterial),
+      diff: '–',
+      diffColor: '',
+    },
+    {
+      label: 'Subunternehmer',
+      soll: '–',
+      ist: fmt(istSub),
+      diff: '–',
+      diffColor: '',
+    },
+    {
+      label: 'Sonstige Kosten',
+      soll: '–',
+      ist: fmt(istOther),
+      diff: '–',
+      diffColor: '',
+    },
+  ]
+
+  const totalBarPct = sollRevenue > 0 ? Math.min(100, (istTotal / sollRevenue) * 100) : 0
+  const barColor = totalBarPct >= 95 ? 'bg-red-500' : totalBarPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Card className="p-0">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 text-left bg-slate-50">
+              <th className="px-4 py-3 font-medium text-slate-500">Kategorie</th>
+              <th className="px-4 py-3 font-medium text-slate-500 text-right">SOLL (Angebot)</th>
+              <th className="px-4 py-3 font-medium text-slate-500 text-right">IST (Tatsächlich)</th>
+              <th className="px-4 py-3 font-medium text-slate-500 text-right">Abweichung</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((row) => (
+              <tr key={row.label}>
+                <td className="px-4 py-3 font-medium text-slate-900">{row.label}</td>
+                <td className="px-4 py-3 text-right text-slate-400">{row.soll}</td>
+                <td className="px-4 py-3 text-right text-slate-700">{row.ist}</td>
+                <td className={`px-4 py-3 text-right ${row.diffColor}`}>{row.diff}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-slate-300 bg-slate-50">
+              <td className="px-4 py-3 font-bold text-slate-900">Gesamtkosten</td>
+              <td className="px-4 py-3 text-right text-slate-400">–</td>
+              <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(istTotal)}</td>
+              <td className="px-4 py-3 text-right text-slate-400">–</td>
+            </tr>
+            <tr className="border-t border-slate-200">
+              <td className="px-4 py-3 font-medium text-slate-900">Auftragswert</td>
+              <td className="px-4 py-3 text-right font-bold text-[#1e3a5f]">{fmt(sollRevenue)}</td>
+              <td className="px-4 py-3 text-right text-slate-400">–</td>
+              <td className="px-4 py-3 text-right text-slate-400">–</td>
+            </tr>
+            <tr className="border-t border-slate-200">
+              <td className="px-4 py-3 font-medium text-slate-900">Gewinn/Verlust</td>
+              <td className="px-4 py-3 text-right text-slate-400">–</td>
+              <td className={`px-4 py-3 text-right font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(profit)}</td>
+              <td className={`px-4 py-3 text-right font-bold ${margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{margin}%</td>
+            </tr>
+          </tfoot>
+        </table>
+      </Card>
+
+      {/* Visual bar chart */}
+      <Card>
+        <h3 className="mb-4 text-lg font-semibold text-slate-900">Gesamtvergleich</h3>
+        <div className="space-y-4">
+          <div>
+            <div className="mb-1 flex justify-between text-sm">
+              <span className="text-slate-600">Kosten vs. Auftragswert</span>
+              <span className="font-medium text-slate-900">{Math.round(totalBarPct)}%</span>
+            </div>
+            <div className="h-4 rounded-full bg-slate-100 overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${totalBarPct}%` }} />
+            </div>
+            <div className="mt-1 flex justify-between text-xs text-slate-400">
+              <span>{fmt(istTotal)} Kosten</span>
+              <span>{fmt(sollRevenue)} Auftragswert</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+            <div className="rounded-lg bg-slate-50 p-3 text-center">
+              <p className="text-xs text-slate-500 mb-1">Auftragswert</p>
+              <p className="text-lg font-bold text-[#1e3a5f]">{fmt(sollRevenue)}</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3 text-center">
+              <p className="text-xs text-slate-500 mb-1">Gesamtkosten</p>
+              <p className="text-lg font-bold text-slate-900">{fmt(istTotal)}</p>
+            </div>
+            <div className={`rounded-lg p-3 text-center ${profit >= 0 ? 'bg-emerald-50' : 'bg-red-50'}`}>
+              <p className="text-xs text-slate-500 mb-1">Gewinn/Verlust</p>
+              <p className={`text-lg font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(profit)}</p>
+            </div>
+            <div className={`rounded-lg p-3 text-center ${margin >= 15 ? 'bg-emerald-50' : margin >= 5 ? 'bg-amber-50' : 'bg-red-50'}`}>
+              <p className="text-xs text-slate-500 mb-1">Marge</p>
+              <p className={`text-lg font-bold ${margin >= 15 ? 'text-emerald-600' : margin >= 5 ? 'text-[#f59e0b]' : 'text-red-600'}`}>{margin}%</p>
+            </div>
+          </div>
+        </div>
       </Card>
     </div>
   )
