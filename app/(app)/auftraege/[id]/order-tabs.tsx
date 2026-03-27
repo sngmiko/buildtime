@@ -74,10 +74,10 @@ function OverviewTab({ details }: { details: OrderDetails }) {
         <h3 className="mb-4 text-lg font-semibold text-slate-900">Auftragsdetails</h3>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between"><dt className="text-slate-500">Status</dt><dd className="font-medium">{o.status as string}</dd></div>
-          {o.start_date && <div className="flex justify-between"><dt className="text-slate-500">Start</dt><dd>{new Date(o.start_date as string).toLocaleDateString('de-DE')}</dd></div>}
-          {o.end_date && <div className="flex justify-between"><dt className="text-slate-500">Ende (geplant)</dt><dd>{new Date(o.end_date as string).toLocaleDateString('de-DE')}</dd></div>}
-          {o.budget && <div className="flex justify-between"><dt className="text-slate-500">Budget</dt><dd className="font-medium">{Number(o.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</dd></div>}
-          {o.description && <div className="pt-2"><dt className="text-slate-500 mb-1">Beschreibung</dt><dd className="text-slate-700">{o.description as string}</dd></div>}
+          {!!o.start_date && <div className="flex justify-between"><dt className="text-slate-500">Start</dt><dd>{new Date(o.start_date as string).toLocaleDateString('de-DE')}</dd></div>}
+          {!!o.end_date && <div className="flex justify-between"><dt className="text-slate-500">Ende (geplant)</dt><dd>{new Date(o.end_date as string).toLocaleDateString('de-DE')}</dd></div>}
+          {!!o.budget && <div className="flex justify-between"><dt className="text-slate-500">Budget</dt><dd className="font-medium">{Number(o.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</dd></div>}
+          {!!o.description && <div className="pt-2"><dt className="text-slate-500 mb-1">Beschreibung</dt><dd className="text-slate-700">{o.description as string}</dd></div>}
         </dl>
       </Card>
       {customer && (
@@ -179,7 +179,7 @@ function CostsTab({ details, workers }: { details: OrderDetails; workers: { id: 
   return (
     <div className="flex flex-col gap-6">
       {/* Budget progress */}
-      {details.order.budget && (
+      {!!details.order.budget && (
         <Card className="p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="text-slate-500">Budget-Auslastung</span>
@@ -283,11 +283,11 @@ function DiaryTab({ details }: { details: OrderDetails }) {
           <Card key={entry.id as string}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-slate-900">{new Date(entry.entry_date as string).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
-              {entry.weather && <span className="text-sm text-slate-500">{entry.weather as string} {entry.temperature && `${entry.temperature}°C`}</span>}
+              {!!entry.weather && <span className="text-sm text-slate-500">{entry.weather as string} {!!entry.temperature && `${entry.temperature}°C`}</span>}
             </div>
             <p className="text-sm text-slate-700">{entry.work_description as string}</p>
-            {entry.incidents && <p className="mt-2 text-sm text-amber-700">Vorkommnisse: {entry.incidents as string}</p>}
-            {entry.defects && <p className="text-sm text-red-700">Mängel: {entry.defects as string}</p>}
+            {!!entry.incidents && <p className="mt-2 text-sm text-amber-700">Vorkommnisse: {entry.incidents as string}</p>}
+            {!!entry.defects && <p className="text-sm text-red-700">Mängel: {entry.defects as string}</p>}
           </Card>
         ))
       )}
@@ -313,7 +313,7 @@ function TeamTab({ details, workers }: { details: OrderDetails; workers: { id: s
             {employees.map(a => (
               <div key={a.id as string} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
                 <p className="font-medium text-slate-900">{workerMap.get(a.resource_id as string) || 'Unbekannt'}</p>
-                {a.notes && <p className="text-xs text-slate-500">{a.notes as string}</p>}
+                {!!a.notes && <p className="text-xs text-slate-500">{a.notes as string}</p>}
               </div>
             ))}
           </div>

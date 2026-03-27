@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getDateRange } from '@/components/time/period-nav'
+import { getDateRange } from '@/lib/date-utils'
 import { getSurcharges } from '@/lib/surcharges'
 import type { TimeEntry, Profile, Company } from '@/lib/types'
 
