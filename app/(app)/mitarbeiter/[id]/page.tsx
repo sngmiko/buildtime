@@ -1,11 +1,23 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { getEmployeeFullDetails } from '@/lib/queries/employee-details'
 import { Card } from '@/components/ui/card'
 import { EmployeeDetailTabs } from './employee-tabs'
-import { calculateEmployeeCost } from '@/actions/employee'
-import { ChevronLeft, Euro } from 'lucide-react'
-import type { ProfileExtended, Qualification, SafetyBriefing, LeaveRequest, SickDay } from '@/lib/types'
+import { ChevronLeft, Clock, AlertTriangle, Car, Briefcase } from 'lucide-react'
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: 'Inhaber',
+  foreman: 'Bauleiter',
+  worker: 'Arbeiter',
+}
+
+const CONTRACT_LABELS: Record<string, string> = {
+  permanent: 'Festanstellung',
+  temporary: 'Befristet',
+  minijob: 'Minijob',
+  intern: 'Praktikum',
+}
 
 export default async function EmployeeDetailPage({
   params,
@@ -31,24 +43,11 @@ export default async function EmployeeDetailPage({
     redirect('/dashboard')
   }
 
-  const [
-    { data: employee },
-    { data: qualifications },
-    { data: briefings },
-    { data: leaveRequests },
-    { data: sickDays },
-  ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', id).single(),
-    supabase.from('qualifications').select('*').eq('user_id', id).order('expiry_date'),
-    supabase.from('safety_briefings').select('*').eq('user_id', id).order('briefing_date', { ascending: false }),
-    supabase.from('leave_requests').select('*').eq('user_id', id).order('start_date', { ascending: false }),
-    supabase.from('sick_days').select('*').eq('user_id', id).order('start_date', { ascending: false }),
-  ])
+  const details = await getEmployeeFullDetails(supabase, id)
+  if (!details.profile) notFound()
 
-  if (!employee) notFound()
-
-  const costData = await calculateEmployeeCost(id)
-  const typedEmployee = employee as ProfileExtended
+  const profile = details.profile as Record<string, unknown>
+  const stats = details.stats
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,40 +56,68 @@ export default async function EmployeeDetailPage({
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{typedEmployee.first_name} {typedEmployee.last_name}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{profile.first_name as string} {profile.last_name as string}</h1>
           <p className="text-sm text-slate-500">
-            {{ owner: 'Inhaber', foreman: 'Bauleiter', worker: 'Arbeiter' }[typedEmployee.role]}
-            {typedEmployee.contract_type && ` · ${{ permanent: 'Festanstellung', temporary: 'Befristet', minijob: 'Minijob', intern: 'Praktikum' }[typedEmployee.contract_type]}`}
+            {ROLE_LABELS[profile.role as string] || (profile.role as string)}
+            {!!profile.contract_type && ` · ${CONTRACT_LABELS[profile.contract_type as string] || (profile.contract_type as string)}`}
           </p>
         </div>
       </div>
 
-      {costData && costData.monthlyGross > 0 && (
-        <Card className="flex items-center gap-4 bg-slate-50 p-4">
-          <Euro className="h-8 w-8 text-[#1e3a5f]" />
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div>
-              <p className="text-xs text-slate-500">Brutto/Monat</p>
-              <p className="font-semibold">{costData.monthlyGross.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">AG-Kosten</p>
-              <p className="font-semibold">{costData.totalMonthly.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Effektiver Stundensatz</p>
-              <p className="font-semibold text-[#1e3a5f]">{costData.effectiveHourlyRate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}/h</p>
-            </div>
+      {/* Stats bar */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Card className="p-4 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Clock className="h-4 w-4 text-[#1e3a5f]" />
+            <p className="text-xs text-slate-500">Stunden diese Woche</p>
           </div>
+          <p className="text-2xl font-bold text-[#1e3a5f]">{stats.weekHours}h</p>
         </Card>
+        <Card className="p-4 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Briefcase className="h-4 w-4 text-slate-500" />
+            <p className="text-xs text-slate-500">Aktive Aufträge</p>
+          </div>
+          <p className="text-2xl font-bold text-slate-900">{details.assignments.length}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Car className="h-4 w-4 text-slate-500" />
+            <p className="text-xs text-slate-500">Fahrzeug</p>
+          </div>
+          <p className="text-sm font-semibold text-slate-900">
+            {details.vehicle ? `${(details.vehicle as Record<string, unknown>).make} ${(details.vehicle as Record<string, unknown>).model}` : '—'}
+          </p>
+        </Card>
+        <Card className={`p-4 text-center ${stats.expiringQuals.length > 0 ? 'border-amber-200 bg-amber-50' : ''}`}>
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <AlertTriangle className={`h-4 w-4 ${stats.expiringQuals.length > 0 ? 'text-amber-500' : 'text-slate-400'}`} />
+            <p className="text-xs text-slate-500">Ablaufende Quals.</p>
+          </div>
+          <p className={`text-2xl font-bold ${stats.expiringQuals.length > 0 ? 'text-amber-600' : 'text-slate-900'}`}>{stats.expiringQuals.length}</p>
+        </Card>
+      </div>
+
+      {/* Sick days / sites summary */}
+      {(stats.sickDaysThisYear > 0 || stats.sitesThisWeek.length > 0) && (
+        <div className="flex flex-wrap gap-3">
+          {stats.sickDaysThisYear > 0 && (
+            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <span className="text-slate-500">Krankheitstage {new Date().getFullYear()}: </span>
+              <span className="font-semibold text-slate-900">{stats.sickDaysThisYear}</span>
+            </div>
+          )}
+          {stats.sitesThisWeek.length > 0 && (
+            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <span className="text-slate-500">Baustellen diese Woche: </span>
+              <span className="font-semibold text-slate-900">{(stats.sitesThisWeek as string[]).join(', ')}</span>
+            </div>
+          )}
+        </div>
       )}
 
       <EmployeeDetailTabs
-        employee={typedEmployee}
-        qualifications={(qualifications as Qualification[]) || []}
-        briefings={(briefings as SafetyBriefing[]) || []}
-        leaveRequests={(leaveRequests as LeaveRequest[]) || []}
-        sickDays={(sickDays as SickDay[]) || []}
+        details={details}
         activeTab={tab || 'details'}
       />
     </div>

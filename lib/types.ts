@@ -362,3 +362,19 @@ export type DiaryPhoto = {
   id: string; diary_entry_id: string; file_path: string
   caption: string | null; created_at: string
 }
+
+export type NotificationType = 'qualification_expiring' | 'inspection_due' | 'budget_warning' | 'low_stock' | 'tax_exemption_expiring' | 'leave_pending' | 'order_status' | 'general'
+export type NotificationSeverity = 'info' | 'warning' | 'critical'
+
+export type Notification = {
+  id: string
+  company_id: string
+  user_id: string | null
+  type: NotificationType
+  title: string
+  message: string
+  severity: NotificationSeverity
+  link: string | null
+  read_at: string | null
+  created_at: string
+}
