@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, Fuel, Route, Wrench } from 'lucide-react'
 import { VehicleEditForm } from './vehicle-edit-form'
+import { AddFuelLogForm, AddTripLogForm } from './fuel-trip-forms'
 import type { Vehicle, FuelLog, TripLog } from '@/lib/types'
 
 export default async function VehicleDetailPage({
@@ -102,6 +103,7 @@ export default async function VehicleDetailPage({
 
       {activeTab === 'fuel' && (
         <div className="flex flex-col gap-4">
+          <AddFuelLogForm vehicleId={v.id} />
           {(fuelLogs as FuelLog[] || []).length === 0 ? (
             <Card className="py-8 text-center text-sm text-slate-500">Keine Tankeinträge</Card>
           ) : (
@@ -124,6 +126,7 @@ export default async function VehicleDetailPage({
 
       {activeTab === 'trips' && (
         <div className="flex flex-col gap-4">
+          <AddTripLogForm vehicleId={v.id} />
           {(tripLogs as TripLog[] || []).length === 0 ? (
             <Card className="py-8 text-center text-sm text-slate-500">Keine Fahrten</Card>
           ) : (
