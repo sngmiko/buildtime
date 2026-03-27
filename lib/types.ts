@@ -62,4 +62,6 @@ export type TimeEntry = {
   notes: string | null
   created_at: string
   updated_at: string
+  edited_by: string | null
+  edited_at: string | null
 }

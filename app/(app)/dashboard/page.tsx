@@ -21,18 +21,24 @@ export default async function DashboardPage() {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
+  const weekStart = new Date()
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
+  weekStart.setHours(0, 0, 0, 0)
+
   const [
     { count: activeWorkers },
     { count: activeSites },
     { data: todayEntries },
     { count: openInvitations },
     { data: clockedInNow },
+    { data: weekEntries },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'worker'),
     supabase.from('construction_sites').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('time_entries').select('clock_in, clock_out, break_minutes').gte('clock_in', todayStart.toISOString()),
     supabase.from('invitations').select('*', { count: 'exact', head: true }).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
     supabase.from('time_entries').select('user_id, clock_in, site_id, profiles(first_name, last_name), construction_sites(name)').is('clock_out', null),
+    supabase.from('time_entries').select('clock_in, clock_out, break_minutes').gte('clock_in', weekStart.toISOString()),
   ])
 
   const totalMinutes = (todayEntries || []).reduce((sum: number, e: { clock_in: string; clock_out: string | null; break_minutes: number }) => {
@@ -42,14 +48,21 @@ export default async function DashboardPage() {
   }, 0)
   const totalHours = (totalMinutes / 60).toFixed(1)
 
+  const weekMinutes = (weekEntries || []).reduce((sum: number, e: { clock_in: string; clock_out: string | null; break_minutes: number }) => {
+    if (!e.clock_out) return sum
+    const diffMs = new Date(e.clock_out).getTime() - new Date(e.clock_in).getTime()
+    return sum + Math.max(0, diffMs / 60000 - e.break_minutes)
+  }, 0)
+  const weekHours = (weekMinutes / 60).toFixed(1)
+
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend'
 
   const stats = [
-    { label: 'Mitarbeiter', value: String(activeWorkers || 0), icon: Users, color: 'text-[#1e3a5f]', bg: 'bg-blue-50' },
-    { label: 'Aktive Baustellen', value: String(activeSites || 0), icon: HardHat, color: 'text-[#d97706]', bg: 'bg-amber-50' },
-    { label: 'Stunden heute', value: totalHours, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Offene Einladungen', value: String(openInvitations || 0), icon: Mail, color: 'text-violet-600', bg: 'bg-violet-50' },
+    { label: 'Mitarbeiter', value: String(activeWorkers || 0), subtitle: undefined, icon: Users, color: 'text-[#1e3a5f]', bg: 'bg-blue-50' },
+    { label: 'Aktive Baustellen', value: String(activeSites || 0), subtitle: undefined, icon: HardHat, color: 'text-[#d97706]', bg: 'bg-amber-50' },
+    { label: 'Stunden heute', value: totalHours, subtitle: `${weekHours}h diese Woche`, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Offene Einladungen', value: String(openInvitations || 0), subtitle: undefined, icon: Mail, color: 'text-violet-600', bg: 'bg-violet-50' },
   ]
 
   return (
@@ -72,6 +85,7 @@ export default async function DashboardPage() {
               <div>
                 <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
                 <p className="text-xs text-slate-500">{stat.label}</p>
+                {stat.subtitle && <p className="text-xs text-slate-400">{stat.subtitle}</p>}
               </div>
             </Card>
           )
