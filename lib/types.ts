@@ -7,6 +7,7 @@ export type Profile = {
   first_name: string
   last_name: string
   phone: string | null
+  language: string | null
   invited_by: string | null
   created_at: string
   updated_at: string
@@ -75,6 +76,7 @@ export type TimeEntry = {
   updated_at: string
   edited_by: string | null
   edited_at: string | null
+  photo_url: string | null
 }
 
 export type ContractType = 'permanent' | 'temporary' | 'minijob' | 'intern'

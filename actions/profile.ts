@@ -17,6 +17,7 @@ export async function updateProfile(
     first_name: formData.get('first_name'),
     last_name: formData.get('last_name'),
     phone: formData.get('phone') || undefined,
+    language: formData.get('language') || undefined,
   }
 
   const validated = profileSchema.safeParse(raw)
