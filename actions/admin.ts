@@ -126,3 +126,81 @@ export async function adminToggleCompany(companyId: string, active: boolean): Pr
   await admin.from('companies').update({ is_active: active }).eq('id', companyId)
   return { success: true, message: active ? 'Firma aktiviert' : 'Firma deaktiviert' }
 }
+
+export async function adminResetPassword(
+  userId: string,
+  prevState: AdminState,
+  formData: FormData
+): Promise<AdminState> {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  const newPassword = formData.get('new_password') as string
+  if (!newPassword || newPassword.length < 6) {
+    return { message: 'Passwort muss mindestens 6 Zeichen lang sein' }
+  }
+
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    password: newPassword,
+  })
+
+  if (error) return { message: error.message }
+  return { success: true, message: 'Passwort wurde geändert' }
+}
+
+export async function adminUpdateUser(
+  userId: string,
+  prevState: AdminState,
+  formData: FormData
+): Promise<AdminState> {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  const email = formData.get('email') as string
+  const firstName = formData.get('first_name') as string
+  const lastName = formData.get('last_name') as string
+  const role = formData.get('role') as string
+
+  if (email) {
+    const { error } = await admin.auth.admin.updateUserById(userId, { email })
+    if (error) return { message: 'E-Mail konnte nicht geändert werden: ' + error.message }
+  }
+
+  const profileUpdate: Record<string, unknown> = {}
+  if (firstName) profileUpdate.first_name = firstName
+  if (lastName) profileUpdate.last_name = lastName
+  if (role) profileUpdate.role = role
+
+  if (Object.keys(profileUpdate).length > 0) {
+    const { error } = await admin.from('profiles').update(profileUpdate).eq('id', userId)
+    if (error) return { message: 'Profil konnte nicht aktualisiert werden' }
+  }
+
+  return { success: true, message: 'Benutzer aktualisiert' }
+}
+
+export async function adminDeleteUser(userId: string): Promise<AdminState> {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  await admin.from('profiles').delete().eq('id', userId)
+  const { error } = await admin.auth.admin.deleteUser(userId)
+
+  if (error) return { message: 'Benutzer konnte nicht gelöscht werden: ' + error.message }
+  return { success: true, message: 'Benutzer gelöscht' }
+}
+
+export async function adminGenerateInviteLink(email: string): Promise<AdminState> {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  const { data } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/onboarding` },
+  })
+
+  const link = data?.properties?.action_link || ''
+  if (!link) return { message: 'Link konnte nicht generiert werden' }
+  return { success: true, inviteLink: link }
+}
