@@ -94,7 +94,8 @@ export default async function BautagebuchPage({
       ) : (
         <div className="flex flex-col gap-3">
           {(entries as DiaryEntryWithSite[]).map((entry) => (
-            <Card key={entry.id}>
+            <Link key={entry.id} href={`/bautagebuch/${entry.id}`}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
@@ -144,6 +145,7 @@ export default async function BautagebuchPage({
                 </div>
               </div>
             </Card>
+            </Link>
           ))}
         </div>
       )}

@@ -115,35 +115,37 @@ export default async function LagerPage({
           {(materials as (Material & { suppliers: { name: string } | null })[] || []).map((m) => {
             const isLow = m.current_stock <= m.min_stock
             return (
-              <Card key={m.id} className="transition-shadow hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{m.name}</h3>
-                    {m.article_number && (
-                      <p className="text-xs text-slate-400">Art.-Nr. {m.article_number}</p>
-                    )}
-                    <p className="text-sm text-slate-500">{CATEGORY_LABELS[m.category]}</p>
-                    {m.suppliers && (
-                      <p className="text-xs text-slate-400">{m.suppliers.name}</p>
-                    )}
-                  </div>
-                  <div className="ml-3 text-right shrink-0">
-                    <p className={`text-sm font-semibold ${isLow ? 'text-red-600' : 'text-slate-900'}`}>
-                      {m.current_stock} {UNIT_LABELS[m.unit]}
-                    </p>
-                    {isLow && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
-                        <AlertTriangle className="h-3 w-3" /> Niedrig
-                      </span>
-                    )}
-                    {m.price_per_unit != null && (
-                      <p className="text-xs text-slate-400 mt-1">
-                        {m.price_per_unit.toFixed(2)} €/{UNIT_LABELS[m.unit]}
+              <Link key={m.id} href={`/lager/material/${m.id}`}>
+                <Card className="transition-shadow hover:shadow-md cursor-pointer">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate">{m.name}</h3>
+                      {m.article_number && (
+                        <p className="text-xs text-slate-400">Art.-Nr. {m.article_number}</p>
+                      )}
+                      <p className="text-sm text-slate-500">{CATEGORY_LABELS[m.category]}</p>
+                      {m.suppliers && (
+                        <p className="text-xs text-slate-400">{m.suppliers.name}</p>
+                      )}
+                    </div>
+                    <div className="ml-3 text-right shrink-0">
+                      <p className={`text-sm font-semibold ${isLow ? 'text-red-600' : 'text-slate-900'}`}>
+                        {m.current_stock} {UNIT_LABELS[m.unit]}
                       </p>
-                    )}
+                      {isLow && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                          <AlertTriangle className="h-3 w-3" /> Niedrig
+                        </span>
+                      )}
+                      {m.price_per_unit != null && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          {m.price_per_unit.toFixed(2)} €/{UNIT_LABELS[m.unit]}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             )
           })}
           {(!materials || materials.length === 0) && (
@@ -165,32 +167,34 @@ export default async function LagerPage({
           </div>
           <div className="flex flex-col gap-3">
             {(suppliers as Supplier[] || []).map((s) => (
-              <Card key={s.id} className="transition-shadow hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-slate-900">{s.name}</h3>
-                    {s.contact_person && (
-                      <p className="text-sm text-slate-500">{s.contact_person}</p>
+              <Link key={s.id} href={`/lager/lieferant/${s.id}`}>
+                <Card className="transition-shadow hover:shadow-md cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">{s.name}</h3>
+                      {s.contact_person && (
+                        <p className="text-sm text-slate-500">{s.contact_person}</p>
+                      )}
+                      <div className="mt-1 flex gap-4 text-xs text-slate-400">
+                        {s.email && <span>{s.email}</span>}
+                        {s.phone && <span>{s.phone}</span>}
+                      </div>
+                    </div>
+                    {s.rating != null && (
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={`text-lg ${i < s.rating! ? 'text-[#f59e0b]' : 'text-slate-200'}`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
                     )}
-                    <div className="mt-1 flex gap-4 text-xs text-slate-400">
-                      {s.email && <span>{s.email}</span>}
-                      {s.phone && <span>{s.phone}</span>}
-                    </div>
                   </div>
-                  {s.rating != null && (
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-lg ${i < s.rating! ? 'text-[#f59e0b]' : 'text-slate-200'}`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
             {(!suppliers || suppliers.length === 0) && (
               <Card className="py-8 text-center text-sm text-slate-500">Keine Lieferanten vorhanden</Card>
@@ -203,23 +207,25 @@ export default async function LagerPage({
       {activeTab === 'bestellungen' && (
         <div className="flex flex-col gap-3">
           {(orders as (PurchaseOrder & { suppliers: { name: string } | null })[] || []).map((o) => (
-            <Card key={o.id} className="transition-shadow hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-slate-900">
-                    {o.suppliers?.name ?? 'Kein Lieferant'}
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    {new Date(o.order_date).toLocaleDateString('de-DE')}
-                    {o.total_amount != null && ` · ${o.total_amount.toFixed(2)} €`}
-                  </p>
-                  {o.notes && <p className="text-xs text-slate-400 mt-1">{o.notes}</p>}
+            <Link key={o.id} href={`/lager/bestellung/${o.id}`}>
+              <Card className="transition-shadow hover:shadow-md cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">
+                      {o.suppliers?.name ?? 'Kein Lieferant'}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {new Date(o.order_date).toLocaleDateString('de-DE')}
+                      {o.total_amount != null && ` · ${o.total_amount.toFixed(2)} €`}
+                    </p>
+                    {o.notes && <p className="text-xs text-slate-400 mt-1">{o.notes}</p>}
+                  </div>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${ORDER_STATUS_COLORS[o.status]}`}>
+                    {ORDER_STATUS_LABELS[o.status]}
+                  </span>
                 </div>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${ORDER_STATUS_COLORS[o.status]}`}>
-                  {ORDER_STATUS_LABELS[o.status]}
-                </span>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
           {(!orders || orders.length === 0) && (
             <Card className="py-8 text-center text-sm text-slate-500">Keine Bestellungen vorhanden</Card>
