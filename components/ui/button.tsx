@@ -7,15 +7,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants = {
   primary:
-    'bg-[#f59e0b] text-black hover:bg-[#fbbf24] shadow-sm hover:shadow-md',
+    'bg-[#1e3a5f] text-white hover:bg-[#2a4f7f] shadow-sm hover:shadow-md',
   secondary:
-    'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 shadow-sm',
+    'bg-[#f59e0b] text-white hover:bg-[#d97706] shadow-sm',
   destructive:
-    'bg-red-500/90 text-white hover:bg-red-500 shadow-sm',
+    'bg-red-600 text-white hover:bg-red-700 shadow-sm',
   outline:
-    'border border-white/10 text-slate-300 hover:bg-white/5 hover:text-white',
+    'border-2 border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white',
   ghost:
-    'text-slate-400 hover:bg-white/5 hover:text-slate-200',
+    'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
 }
 
 const sizes = {
@@ -33,7 +33,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f59e0b] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f] disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled}
       {...props}
     />

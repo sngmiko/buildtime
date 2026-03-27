@@ -11,12 +11,12 @@ export function Select({ label, error, id, options, className = '', ...props }: 
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={selectId} className="text-sm font-medium text-slate-400">
+      <label htmlFor={selectId} className="text-sm font-medium text-slate-700">
         {label}
       </label>
       <select
         id={selectId}
-        className={`h-11 rounded-xl border bg-white/5 px-3 text-sm text-slate-100 transition-colors focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b]/30 ${error ? 'border-red-500/50' : 'border-white/10'} ${className}`}
+        className={`h-11 rounded-xl border bg-white px-3 text-sm text-slate-900 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/20 disabled:bg-slate-50 disabled:text-slate-500 ${error ? 'border-red-500/50' : 'border-slate-200'} ${className}`}
         {...props}
       >
         {options.map((opt) => (
@@ -25,7 +25,7 @@ export function Select({ label, error, id, options, className = '', ...props }: 
           </option>
         ))}
       </select>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   )
 }

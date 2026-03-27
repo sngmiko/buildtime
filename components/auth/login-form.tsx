@@ -47,10 +47,10 @@ export function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-[#0c0c14] px-2 text-slate-400">
+          <span className="bg-[#f8f9fb] px-2 text-slate-400 lg:bg-white">
             oder
           </span>
         </div>

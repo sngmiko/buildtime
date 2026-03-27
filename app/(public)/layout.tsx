@@ -41,11 +41,11 @@ export default function PublicLayout({
       </div>
 
       {/* Right: Form area */}
-      <div className="flex flex-1 flex-col items-center justify-center p-6 lg:w-1/2 bg-[#0c0c14]">
+      <div className="flex flex-1 flex-col items-center justify-center p-6 lg:w-1/2 bg-[#f8f9fb]">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
-            <h1 className="text-2xl font-bold text-slate-100">
+            <h1 className="text-2xl font-bold text-slate-900">
               Build<span className="text-[#f59e0b]">Time</span>
             </h1>
             <p className="mt-1 text-sm text-slate-400">

@@ -28,12 +28,12 @@ export function QuickActions() {
                 key={action.href}
                 href={action.href}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl bg-[#1a1a2e] px-4 py-3 shadow-lg border border-white/10 hover:shadow-xl transition-all group"
+                className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-lg border border-slate-200 hover:shadow-xl transition-all group"
               >
                 <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${action.color} text-white`}>
                   <Icon className="h-4 w-4" />
                 </div>
-                <span className="text-sm font-medium text-slate-300 group-hover:text-white">{action.label}</span>
+                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">{action.label}</span>
               </Link>
             )
           })}
@@ -46,7 +46,7 @@ export function QuickActions() {
         className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 ${
           open
             ? 'bg-slate-700 rotate-45 hover:bg-slate-600'
-            : 'bg-[#f59e0b] hover:bg-[#fbbf24] hover:scale-110'
+            : 'bg-[#1e3a5f] hover:bg-[#2a4f7f] hover:scale-110'
         }`}
       >
         {open ? <X className="h-6 w-6 text-white" /> : <Plus className="h-6 w-6 text-white" />}

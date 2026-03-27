@@ -25,10 +25,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const icons = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info }
   const colors = {
-    success: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-    error: 'bg-red-500/10 border-red-500/20 text-red-400',
-    warning: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
-    info: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+    error: 'bg-red-50 border-red-200 text-red-800',
+    warning: 'bg-amber-50 border-amber-200 text-amber-800',
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
   }
 
   return (
