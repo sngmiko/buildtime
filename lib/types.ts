@@ -45,6 +45,17 @@ export type ConstructionSite = {
   created_by: string
   created_at: string
   updated_at: string
+  description: string | null
+  client_name: string | null
+  client_phone: string | null
+  client_email: string | null
+  start_date: string | null
+  end_date: string | null
+  budget: number | null
+  site_manager: string | null
+  notes: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type TimeEntry = {
