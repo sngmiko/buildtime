@@ -47,6 +47,7 @@ export function TimeEntryRow({
           {entry.break_minutes > 0 && ` · ${entry.break_minutes}min Pause`}
           {entry.edited_at && ' · bearbeitet'}
         </p>
+        {entry.photo_url && <span className="text-xs text-blue-500">📷 Foto</span>}
       </div>
       <div className="flex items-center gap-2">
         <span className="font-medium text-slate-700">
