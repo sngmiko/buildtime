@@ -16,7 +16,7 @@ export function WorkerBottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 md:hidden">
-      <nav className="flex border-t border-slate-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <nav className="flex border-t border-slate-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         {WORKER_TABS.map((tab) => {
           const active = pathname.startsWith(tab.href)
           const Icon = tab.icon

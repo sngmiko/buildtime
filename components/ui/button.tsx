@@ -7,9 +7,9 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants = {
   primary:
-    'bg-[#1e3a5f] text-white hover:bg-[#2a4f7f] shadow-sm',
+    'bg-[#1e3a5f] text-white hover:bg-[#2a4f7f] shadow-sm hover:shadow-md active:scale-[0.98]',
   secondary:
-    'bg-[#f59e0b] text-white hover:bg-[#d97706] shadow-sm',
+    'bg-[#f59e0b] text-white hover:bg-[#d97706] shadow-sm hover:shadow-md active:scale-[0.98]',
   destructive:
     'bg-red-600 text-white hover:bg-red-700 shadow-sm',
   outline:

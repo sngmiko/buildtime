@@ -48,7 +48,7 @@ export default async function AppLayout({
       <div className="flex flex-1">
         {!isWorker && <ManagerSidebar role={profile.role} />}
         <ToastProvider>
-          <main className={`flex flex-1 flex-col p-4 md:p-6 ${isWorker ? 'pb-24 md:pb-6' : ''}`}>
+          <main className={`flex flex-1 flex-col p-4 md:p-6 bg-gradient-subtle ${isWorker ? 'pb-24 md:pb-6' : ''}`}>
             {children}
             {!isWorker && (
               <footer className="mt-auto pt-8 text-center text-xs text-slate-400">
