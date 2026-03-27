@@ -378,3 +378,35 @@ export type Notification = {
   read_at: string | null
   created_at: string
 }
+
+export type Plan = 'trial' | 'starter' | 'business' | 'enterprise'
+
+export type CompanyExtended = Company & {
+  plan: Plan
+  trial_ends_at: string | null
+  max_employees: number
+  monthly_price: number
+  is_active: boolean
+  logo_url: string | null
+  onboarding_completed: boolean
+  onboarding_step: number
+}
+
+export type OnboardingProgress = {
+  id: string
+  company_id: string
+  profile_completed: boolean
+  first_site_created: boolean
+  first_employee_invited: boolean
+  first_time_entry: boolean
+  first_order_created: boolean
+  created_at: string
+  updated_at: string
+}
+
+export const PLAN_CONFIG: Record<Plan, { name: string; price: number; maxEmployees: number; description: string }> = {
+  trial: { name: 'Testphase', price: 0, maxEmployees: 5, description: '7 Tage kostenlos testen' },
+  starter: { name: 'Starter', price: 49, maxEmployees: 10, description: 'Bis 10 Mitarbeiter' },
+  business: { name: 'Business', price: 99, maxEmployees: 30, description: 'Bis 30 Mitarbeiter' },
+  enterprise: { name: 'Enterprise', price: 199, maxEmployees: 100, description: 'Bis 100 Mitarbeiter' },
+}
