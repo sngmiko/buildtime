@@ -15,6 +15,15 @@ export async function createSite(prevState: SiteState, formData: FormData): Prom
     name: formData.get('name'),
     address: formData.get('address') || undefined,
     status: formData.get('status') || 'active',
+    description: formData.get('description') || undefined,
+    client_name: formData.get('client_name') || undefined,
+    client_phone: formData.get('client_phone') || undefined,
+    client_email: formData.get('client_email') || undefined,
+    start_date: formData.get('start_date') || undefined,
+    end_date: formData.get('end_date') || undefined,
+    budget: formData.get('budget') || undefined,
+    site_manager: formData.get('site_manager') || undefined,
+    notes: formData.get('notes') || undefined,
   }
 
   const validated = siteSchema.safeParse(raw)
@@ -37,14 +46,25 @@ export async function createSite(prevState: SiteState, formData: FormData): Prom
     return { message: 'Keine Berechtigung' }
   }
 
+  const d = validated.data
+
   const { error } = await supabase
     .from('construction_sites')
     .insert({
       company_id: profile.company_id,
-      name: validated.data.name,
-      address: validated.data.address || null,
-      status: validated.data.status,
+      name: d.name,
+      address: d.address || null,
+      status: d.status,
       created_by: user.id,
+      description: d.description || null,
+      client_name: d.client_name || null,
+      client_phone: d.client_phone || null,
+      client_email: d.client_email || null,
+      start_date: d.start_date || null,
+      end_date: d.end_date || null,
+      budget: typeof d.budget === 'number' ? d.budget : null,
+      site_manager: d.site_manager || null,
+      notes: d.notes || null,
     })
 
   if (error) {
@@ -63,6 +83,15 @@ export async function updateSite(
     name: formData.get('name'),
     address: formData.get('address') || undefined,
     status: formData.get('status') || 'active',
+    description: formData.get('description') || undefined,
+    client_name: formData.get('client_name') || undefined,
+    client_phone: formData.get('client_phone') || undefined,
+    client_email: formData.get('client_email') || undefined,
+    start_date: formData.get('start_date') || undefined,
+    end_date: formData.get('end_date') || undefined,
+    budget: formData.get('budget') || undefined,
+    site_manager: formData.get('site_manager') || undefined,
+    notes: formData.get('notes') || undefined,
   }
 
   const validated = siteSchema.safeParse(raw)
@@ -85,12 +114,23 @@ export async function updateSite(
     return { message: 'Keine Berechtigung' }
   }
 
+  const d = validated.data
+
   const { error } = await supabase
     .from('construction_sites')
     .update({
-      name: validated.data.name,
-      address: validated.data.address || null,
-      status: validated.data.status,
+      name: d.name,
+      address: d.address || null,
+      status: d.status,
+      description: d.description || null,
+      client_name: d.client_name || null,
+      client_phone: d.client_phone || null,
+      client_email: d.client_email || null,
+      start_date: d.start_date || null,
+      end_date: d.end_date || null,
+      budget: typeof d.budget === 'number' ? d.budget : null,
+      site_manager: d.site_manager || null,
+      notes: d.notes || null,
     })
     .eq('id', siteId)
 
