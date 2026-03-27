@@ -116,24 +116,38 @@ export async function acceptInvite(
     return { message: 'Einladung ist ungültig oder abgelaufen' }
   }
 
-  const supabase = await createClient()
-  const { error: signUpError } = await supabase.auth.signUp({
+  // Create user via admin client (bypasses email confirmation)
+  const { data: signUpData, error: signUpError } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: {
-        flow: 'invite',
-        company_id: invitation.company_id,
-        role: invitation.role,
-        first_name: validated.data.first_name,
-        last_name: validated.data.last_name,
-        invited_by: invitation.created_by,
-      },
+    email_confirm: true,
+    user_metadata: {
+      flow: 'invite',
+      first_name,
+      last_name,
     },
   })
 
   if (signUpError) {
     return { message: signUpError.message }
+  }
+
+  // Create profile via admin client (trigger only handles 'register' flow)
+  const { error: profileError } = await admin
+    .from('profiles')
+    .insert({
+      id: signUpData.user.id,
+      company_id: invitation.company_id,
+      role: invitation.role,
+      first_name,
+      last_name,
+      invited_by: invitation.created_by,
+    })
+
+  if (profileError) {
+    // Clean up: delete the auth user if profile creation fails
+    await admin.auth.admin.deleteUser(signUpData.user.id)
+    return { message: 'Profil konnte nicht erstellt werden' }
   }
 
   // Mark invitation as accepted
@@ -146,6 +160,10 @@ export async function acceptInvite(
   if (count === 0) {
     return { message: 'Einladung wurde bereits angenommen' }
   }
+
+  // Sign in the new user
+  const supabase = await createClient()
+  await supabase.auth.signInWithPassword({ email, password })
 
   const destination = invitation.role === 'worker' ? '/stempeln' : '/dashboard'
   redirect(destination)

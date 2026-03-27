@@ -135,7 +135,7 @@ BEGIN
   IF flow = 'register' THEN
     -- Create company and owner profile atomically
     INSERT INTO public.companies (name)
-    VALUES (meta->>'company_name')
+    VALUES (COALESCE(meta->>'company_name', 'Unnamed'))
     RETURNING id INTO new_company_id;
 
     INSERT INTO public.profiles (id, company_id, role, first_name, last_name)
@@ -143,26 +143,20 @@ BEGIN
       NEW.id,
       new_company_id,
       'owner',
-      meta->>'first_name',
-      meta->>'last_name'
-    );
-
-  ELSIF flow = 'invite' THEN
-    -- Create profile from invitation metadata
-    INSERT INTO public.profiles (id, company_id, role, first_name, last_name, invited_by)
-    VALUES (
-      NEW.id,
-      (meta->>'company_id')::UUID,
-      (meta->>'role')::user_role,
-      meta->>'first_name',
-      meta->>'last_name',
-      (meta->>'invited_by')::UUID
+      COALESCE(meta->>'first_name', ''),
+      COALESCE(meta->>'last_name', '')
     );
   END IF;
 
-  -- For SSO without flow metadata: no automatic profile creation.
-  -- The app redirects to registration if no profile is found.
+  -- invite flow: profile is created by the server action using admin client.
+  -- GoTrue's transaction context prevents the trigger from inserting into
+  -- profiles for invited users due to RLS/role constraints.
 
+  -- SSO without flow: app redirects to registration if no profile found.
+
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE LOG 'handle_new_user failed: % %', SQLERRM, SQLSTATE;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
