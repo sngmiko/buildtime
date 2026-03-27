@@ -232,3 +232,73 @@ export type EquipmentCost = {
   description: string | null
   created_at: string
 }
+
+export type Supplier = {
+  id: string
+  company_id: string
+  name: string
+  contact_person: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  rating: number | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MaterialUnit = 'piece' | 'm' | 'm2' | 'm3' | 'kg' | 'l' | 'pack'
+export type MaterialCategory = 'building_material' | 'consumable' | 'tool' | 'small_parts' | 'other'
+
+export type Material = {
+  id: string
+  company_id: string
+  name: string
+  article_number: string | null
+  unit: MaterialUnit
+  price_per_unit: number | null
+  supplier_id: string | null
+  min_stock: number
+  current_stock: number
+  category: MaterialCategory
+  created_at: string
+  updated_at: string
+}
+
+export type OrderStatus = 'draft' | 'ordered' | 'partially_delivered' | 'delivered' | 'cancelled'
+
+export type PurchaseOrder = {
+  id: string
+  company_id: string
+  supplier_id: string | null
+  order_date: string
+  status: OrderStatus
+  total_amount: number | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type PurchaseOrderItem = {
+  id: string
+  order_id: string
+  material_id: string | null
+  quantity: number
+  unit_price: number
+  delivered_quantity: number
+  created_at: string
+}
+
+export type StockMovementType = 'in' | 'out' | 'return'
+
+export type StockMovement = {
+  id: string
+  company_id: string
+  material_id: string
+  site_id: string | null
+  type: StockMovementType
+  quantity: number
+  notes: string | null
+  created_by: string
+  created_at: string
+}
