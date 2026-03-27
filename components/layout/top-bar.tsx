@@ -29,21 +29,22 @@ export function TopBar({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200/50 bg-white/80 px-6 shadow-sm backdrop-blur-xl">
-      <div className="flex items-center gap-3">
-        <span className="text-lg font-bold text-[#1e3a5f]">Build<span className="text-[#f59e0b]">Time</span></span>
-        <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
-          <Building2 className="h-3.5 w-3.5" />
-          {companyName}
-        </div>
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-100 bg-white px-6">
+      <div className="flex items-center gap-3 text-sm text-slate-500">
+        <Building2 className="h-4 w-4" />
+        <span>{companyName}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <SearchBar />
         <NotificationBell notifications={notifications} />
+        <div className="h-6 w-px bg-slate-200" />
         <span className="hidden text-sm text-slate-600 sm:inline">{userName}</span>
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
+        <button
+          onClick={handleLogout}
+          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+        >
           <LogOut className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </header>
   )
