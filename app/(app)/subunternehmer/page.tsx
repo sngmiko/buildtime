@@ -75,7 +75,8 @@ export default async function SubunternehmerPage() {
               && sub.tax_exemption_valid_until >= nowStr
 
             return (
-              <Card key={sub.id} className="flex flex-col gap-3">
+              <Link key={sub.id} href={`/subunternehmer/${sub.id}`} className="block">
+              <Card className="flex flex-col gap-3 hover:border-[#1e3a5f]/30 transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-slate-900 truncate">{sub.name}</h3>
@@ -126,6 +127,7 @@ export default async function SubunternehmerPage() {
                   </p>
                 )}
               </Card>
+              </Link>
             )
           })}
         </div>
