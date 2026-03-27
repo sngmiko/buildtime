@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ProfileForm } from './profile-form'
 import { LeaveRequestSection } from './leave-request-form'
+import { SickReportForm } from './sick-report-form'
 import type { Profile, LeaveRequest } from '@/lib/types'
 
 export default async function ProfilePage() {
@@ -33,6 +34,7 @@ export default async function ProfilePage() {
         <ProfileForm profile={profile} email={user.email || ''} />
       </Card>
       <LeaveRequestSection leaveRequests={(leaveRequests as LeaveRequest[]) || []} />
+      <SickReportForm />
     </div>
   )
 }
