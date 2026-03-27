@@ -6,6 +6,7 @@ import { ChevronLeft, AlertTriangle } from 'lucide-react'
 import { SubEditForm } from './sub-edit-form'
 import { AddAssignmentForm } from './add-assignment-form'
 import type { Subcontractor, SubcontractorAssignment } from '@/lib/types'
+import { formatCurrency, formatNumber } from '@/lib/format'
 
 export default async function SubDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -27,7 +28,8 @@ export default async function SubDetailPage({ params }: { params: Promise<{ id: 
 
   const taxExpiring = s.tax_exemption_valid_until && new Date(s.tax_exemption_valid_until) < new Date(Date.now() + 30 * 86400000)
   const avgRating = [s.quality_rating, s.reliability_rating, s.price_rating].filter(Boolean)
-  const avg = avgRating.length > 0 ? (avgRating.reduce((a, b) => (a || 0) + (b || 0), 0)! / avgRating.length).toFixed(1) : null
+  const avgRaw = avgRating.length > 0 ? (avgRating.reduce((a, b) => (a || 0) + (b || 0), 0)! / avgRating.length) : null
+  const avg = avgRaw != null ? formatNumber(avgRaw, 1) : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,7 +70,7 @@ export default async function SubDetailPage({ params }: { params: Promise<{ id: 
                       <p className="text-xs text-slate-500">{a.description}</p>
                     </div>
                     <div className="text-right">
-                      {a.agreed_amount && <p className="font-medium">{Number(a.agreed_amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>}
+                      {a.agreed_amount && <p className="font-medium">{formatCurrency(Number(a.agreed_amount))}</p>}
                       <p className="text-xs text-slate-500">{{ active: 'Aktiv', completed: 'Abgeschlossen', cancelled: 'Storniert' }[a.status]}</p>
                     </div>
                   </div>

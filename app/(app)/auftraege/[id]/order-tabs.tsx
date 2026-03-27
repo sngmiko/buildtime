@@ -10,6 +10,7 @@ import { addOrderItem, addOrderCost, type OrdersState } from '@/actions/orders'
 import { createMeasurement, type MeasurementState } from '@/actions/measurements'
 import { FileText, Calculator, BookOpen, Users, BarChart3, Ruler, ChevronDown, ChevronRight } from 'lucide-react'
 import type { OrderCostBreakdown } from '@/lib/queries/cost-integration'
+import { formatCurrency, formatNumber } from '@/lib/format'
 
 const TABS = [
   { id: 'overview', label: 'Übersicht', icon: FileText },
@@ -87,7 +88,7 @@ function OverviewTab({ details }: { details: OrderDetails }) {
           <div className="flex justify-between"><dt className="text-slate-500">Status</dt><dd className="font-medium">{o.status as string}</dd></div>
           {!!o.start_date && <div className="flex justify-between"><dt className="text-slate-500">Start</dt><dd>{new Date(o.start_date as string).toLocaleDateString('de-DE')}</dd></div>}
           {!!o.end_date && <div className="flex justify-between"><dt className="text-slate-500">Ende (geplant)</dt><dd>{new Date(o.end_date as string).toLocaleDateString('de-DE')}</dd></div>}
-          {!!o.budget && <div className="flex justify-between"><dt className="text-slate-500">Budget</dt><dd className="font-medium">{Number(o.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</dd></div>}
+          {!!o.budget && <div className="flex justify-between"><dt className="text-slate-500">Budget</dt><dd className="font-medium">{formatCurrency(Number(o.budget))}</dd></div>}
           {!!o.description && <div className="pt-2"><dt className="text-slate-500 mb-1">Beschreibung</dt><dd className="text-slate-700">{o.description as string}</dd></div>}
         </dl>
       </Card>
@@ -131,15 +132,15 @@ function ItemsTab({ details }: { details: OrderDetails }) {
                 <td className="px-4 py-3 text-slate-500">{item.position as number}</td>
                 <td className="px-4 py-3 font-medium text-slate-900">{item.description as string}</td>
                 <td className="px-4 py-3 text-right text-slate-700">{item.quantity as number} {item.unit as string}</td>
-                <td className="px-4 py-3 text-right text-slate-700">{Number(item.unit_price).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
-                <td className="px-4 py-3 text-right font-medium text-slate-900">{(Number(item.quantity) * Number(item.unit_price)).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+                <td className="px-4 py-3 text-right text-slate-700">{formatCurrency(Number(item.unit_price))}</td>
+                <td className="px-4 py-3 text-right font-medium text-slate-900">{formatCurrency(Number(item.quantity) * Number(item.unit_price))}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-slate-300">
               <td colSpan={4} className="px-4 py-3 font-bold text-slate-900">Gesamt</td>
-              <td className="px-4 py-3 text-right font-bold text-slate-900">{total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+              <td className="px-4 py-3 text-right font-bold text-slate-900">{formatCurrency(total)}</td>
             </tr>
           </tfoot>
         </table>
@@ -179,7 +180,7 @@ function CollapsibleSection({
   colorClass?: string
 }) {
   const [open, setOpen] = useState(false)
-  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+  const fmt = formatCurrency
 
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -207,7 +208,7 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
   const f = costBreakdown
   const budgetPct = details.order.budget ? (f.grandTotal / Number(details.order.budget)) * 100 : 0
   const barColor = budgetPct >= 95 ? 'bg-red-500' : budgetPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
-  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+  const fmt = formatCurrency
 
   const orderId = details.order.id as string
   const boundAddCost = addOrderCost.bind(null, orderId)
@@ -226,7 +227,7 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
             <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${Math.min(100, budgetPct)}%` }} />
           </div>
           <div className="mt-2 flex justify-between text-xs text-slate-400">
-            <span>{fmt(f.grandTotal)} von {Number(details.order.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+            <span>{fmt(f.grandTotal)} von {formatCurrency(Number(details.order.budget))}</span>
           </div>
         </Card>
       )}
@@ -257,7 +258,7 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
               ))
             )}
             <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
-              <span>{f.labor.entries.reduce((s, e) => s + e.hours, 0).toFixed(1)} Mitarbeiterstunden à Ø {f.labor.entries.length > 0 ? fmt(f.labor.entries.reduce((s, e) => s + e.rate, 0) / f.labor.entries.length) : '–'}/h</span>
+              <span>{formatNumber(f.labor.entries.reduce((s, e) => s + e.hours, 0), 1)} Mitarbeiterstunden à Ø {f.labor.entries.length > 0 ? fmt(f.labor.entries.reduce((s, e) => s + e.rate, 0) / f.labor.entries.length) : '–'}/h</span>
               <span className="text-blue-600">{fmt(f.labor.total)}</span>
             </div>
           </CollapsibleSection>
@@ -445,13 +446,13 @@ function AufmassTab({ details }: { details: OrderDetails }) {
                     {m.description as string}
                     {!!(m.notes) && <p className="text-xs text-slate-400 font-normal">{m.notes as string}</p>}
                   </td>
-                  <td className="px-4 py-3 text-right text-slate-600">{m.length != null ? Number(m.length).toFixed(2) : '–'}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{m.width != null ? Number(m.width).toFixed(2) : '–'}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{m.height != null ? Number(m.height).toFixed(2) : '–'}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{Number(m.quantity).toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.length != null ? formatNumber(Number(m.length), 2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.width != null ? formatNumber(Number(m.width), 2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{m.height != null ? formatNumber(Number(m.height), 2) : '–'}</td>
+                  <td className="px-4 py-3 text-right text-slate-600">{formatNumber(Number(m.quantity), 2)}</td>
                   <td className="px-4 py-3 text-right text-slate-600">{m.unit as string}</td>
                   <td className="px-4 py-3 text-right font-semibold text-slate-900">
-                    {Number(m.calculated_value).toFixed(2)} {m.unit as string}
+                    {formatNumber(Number(m.calculated_value), 2)} {m.unit as string}
                   </td>
                 </tr>
               ))}
@@ -500,7 +501,7 @@ function AufmassTab({ details }: { details: OrderDetails }) {
 
 function NachkalkulationTab({ details, costBreakdown }: { details: OrderDetails; costBreakdown: OrderCostBreakdown }) {
   const f = costBreakdown
-  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+  const fmt = formatCurrency
 
   const totalBarPct = f.revenue > 0 ? Math.min(100, (f.grandTotal / f.revenue) * 100) : 0
   const barColor = totalBarPct >= 95 ? 'bg-red-500' : totalBarPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card } from '@/components/ui/card'
 import type { CompanyExtended } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 export default async function AdminStatsPage() {
   const supabase = await createClient()
@@ -46,11 +47,11 @@ export default async function AdminStatsPage() {
       {/* Revenue */}
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="p-4 text-center">
-          <p className="text-3xl font-bold text-emerald-600">{mrr.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-3xl font-bold text-emerald-600">{formatCurrency(mrr)}</p>
           <p className="text-xs text-slate-500">MRR (Monthly Recurring Revenue)</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-3xl font-bold text-slate-900">{arr.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-3xl font-bold text-slate-900">{formatCurrency(arr)}</p>
           <p className="text-xs text-slate-500">ARR (Annual Recurring Revenue)</p>
         </Card>
         <Card className="p-4 text-center">

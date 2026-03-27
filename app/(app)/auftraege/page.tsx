@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Briefcase, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { Order, Customer } from '@/lib/types'
+import { formatCurrency, formatNumber } from '@/lib/format'
 
 const STATUS_LABELS: Record<string, string> = {
   quote: 'Angebot',
@@ -149,18 +150,18 @@ export default async function AuftraegePage({
                   <div className="shrink-0 text-right">
                     {order.budget != null && (
                       <p className="text-sm font-semibold text-slate-900">
-                        {order.budget.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                        {formatCurrency(order.budget)}
                       </p>
                     )}
                     {revenue > 0 && (
                       <p className="text-xs text-slate-500">
-                        {revenue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} Angebot
+                        {formatCurrency(revenue)} Angebot
                       </p>
                     )}
                     {margin !== null && (
                       <div className={`flex items-center justify-end gap-1 text-xs font-medium ${marginColor}`}>
                         <MarginIcon className="h-3.5 w-3.5" />
-                        {margin.toFixed(1)}% Marge*
+                        {formatNumber(margin, 1)}% Marge*
                       </div>
                     )}
                     {margin !== null && (

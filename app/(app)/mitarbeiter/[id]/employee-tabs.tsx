@@ -16,6 +16,7 @@ import {
 } from '@/actions/employee'
 import type { ProfileExtended, Qualification, SafetyBriefing, LeaveRequest, SickDay } from '@/lib/types'
 import { AlertTriangle, Check, X, Shield, FileText, Calendar, Thermometer, Clock, Briefcase } from 'lucide-react'
+import { formatNumber } from '@/lib/format'
 
 const TABS = [
   { id: 'details', label: 'Stammdaten', icon: FileText },
@@ -360,7 +361,7 @@ function ActivityTab({ details }: { details: EmployeeDetails }) {
                     </p>
                   </div>
                   <span className="font-medium text-slate-900">
-                    {hours !== null ? `${hours.toFixed(1)}h` : <span className="text-amber-600 text-xs">läuft</span>}
+                    {hours !== null ? `${formatNumber(hours, 1)}h` : <span className="text-amber-600 text-xs">läuft</span>}
                   </span>
                 </div>
               )

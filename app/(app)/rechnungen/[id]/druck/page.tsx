@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AutoPrint } from './auto-print'
 import type { Invoice, InvoiceItem, Customer } from '@/lib/types'
+import { formatNumber } from '@/lib/format'
 
 type InvoiceWithCustomer = Invoice & { customers: (Pick<Customer, 'name' | 'address'> & { contact_person?: string | null }) | null }
 type CompanyWithBank = {
@@ -91,10 +92,10 @@ export default async function RechnungDruckPage({
                 <td className="py-2 pr-4 text-right text-slate-700">{item.quantity}</td>
                 <td className="py-2 pr-4 text-right text-slate-700">{item.unit}</td>
                 <td className="py-2 pr-4 text-right text-slate-700">
-                  {item.unit_price.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                  {formatNumber(item.unit_price, 2)}
                 </td>
                 <td className="py-2 text-right font-medium text-slate-900">
-                  {item.total.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                  {formatNumber(item.total, 2)}
                 </td>
               </tr>
             ))}
@@ -103,19 +104,19 @@ export default async function RechnungDruckPage({
             <tr className="border-t border-slate-200">
               <td colSpan={5} className="pt-3 pr-4 text-right text-slate-600">Nettobetrag</td>
               <td className="pt-3 text-right font-medium text-slate-900">
-                {invoice.subtotal.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                {formatNumber(invoice.subtotal, 2)} €
               </td>
             </tr>
             <tr>
               <td colSpan={5} className="py-1 pr-4 text-right text-slate-600">zzgl. {invoice.tax_rate}% MwSt.</td>
               <td className="py-1 text-right font-medium text-slate-900">
-                {invoice.tax_amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                {formatNumber(invoice.tax_amount, 2)} €
               </td>
             </tr>
             <tr className="border-t-2 border-[#1e3a5f]">
               <td colSpan={5} className="pt-2 pr-4 text-right text-base font-bold text-slate-900">Gesamtbetrag</td>
               <td className="pt-2 text-right text-base font-bold text-[#1e3a5f]">
-                {invoice.total.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                {formatNumber(invoice.total, 2)} €
               </td>
             </tr>
           </tfoot>

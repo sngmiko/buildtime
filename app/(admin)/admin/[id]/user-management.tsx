@@ -17,6 +17,7 @@ import {
 } from '@/actions/admin'
 import { Mail, Key, Pencil, Trash2, Link2, ChevronDown, ChevronUp, User } from 'lucide-react'
 import type { Profile } from '@/lib/types'
+import { formatDateTime } from '@/lib/format'
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Inhaber',
@@ -94,7 +95,7 @@ export function UserManagement({
                       <div className="flex justify-between"><dt className="text-slate-500">E-Mail</dt><dd className="text-slate-900">{auth?.email || '–'}</dd></div>
                       <div className="flex justify-between"><dt className="text-slate-500">Telefon</dt><dd className="text-slate-900">{p.phone || '–'}</dd></div>
                       <div className="flex justify-between"><dt className="text-slate-500">Erstellt</dt><dd className="text-slate-900">{new Date(p.created_at).toLocaleDateString('de-DE')}</dd></div>
-                      <div className="flex justify-between"><dt className="text-slate-500">Letzter Login</dt><dd className="text-slate-900">{auth?.last_sign_in_at ? new Date(auth.last_sign_in_at).toLocaleString('de-DE') : 'Noch nie'}</dd></div>
+                      <div className="flex justify-between"><dt className="text-slate-500">Letzter Login</dt><dd className="text-slate-900">{auth?.last_sign_in_at ? formatDateTime(auth.last_sign_in_at) : 'Noch nie'}</dd></div>
                     </dl>
                   </div>
 

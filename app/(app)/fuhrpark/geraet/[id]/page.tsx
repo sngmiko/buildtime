@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react'
 import { EquipmentEditForm } from './equipment-edit-form'
 import { AddCostForm } from './add-cost-form'
 import type { Equipment, EquipmentCost } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 const CAT_LABELS: Record<string, string> = { heavy: 'Baumaschine', power_tool: 'Elektrowerkzeug', tool: 'Werkzeug', safety: 'Sicherheit', other: 'Sonstiges' }
 const STATUS_LABELS: Record<string, string> = { available: 'Verfügbar', in_use: 'Im Einsatz', maintenance: 'Wartung', defect: 'Defekt', disposed: 'Entsorgt' }
@@ -45,11 +46,11 @@ export default async function EquipmentDetailPage({
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">{e.purchase_price ? Number(e.purchase_price).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : '–'}</p>
+          <p className="text-2xl font-bold text-slate-900">{e.purchase_price ? formatCurrency(Number(e.purchase_price)) : '–'}</p>
           <p className="text-xs text-slate-500">Kaufpreis</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">{totalCosts.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalCosts)}</p>
           <p className="text-xs text-slate-500">Gesamtkosten</p>
         </Card>
         <Card className="p-4 text-center">
@@ -82,7 +83,7 @@ export default async function EquipmentDetailPage({
                     <p className="font-medium text-slate-900">{c.description || c.type}</p>
                     <p className="text-xs text-slate-500">{new Date(c.date).toLocaleDateString('de-DE')} · {{ maintenance: 'Wartung', repair: 'Reparatur', fuel: 'Betriebsstoffe', other: 'Sonstiges' }[c.type]}</p>
                   </div>
-                  <span className="font-medium">{Number(c.amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                  <span className="font-medium">{formatCurrency(Number(c.amount))}</span>
                 </div>
               ))}
             </div>

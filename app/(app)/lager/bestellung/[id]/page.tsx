@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import { updateOrderStatus } from '@/actions/inventory'
 import type { PurchaseOrder, PurchaseOrderItem, Material } from '@/lib/types'
+import { formatCurrency, formatNumber } from '@/lib/format'
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   draft: 'Entwurf',
@@ -87,7 +88,7 @@ export default async function OrderDetailPage({
             {new Date(o.order_date).toLocaleDateString('de-DE', {
               day: '2-digit', month: '2-digit', year: 'numeric',
             })}
-            {o.total_amount != null && ` · ${o.total_amount.toFixed(2)} €`}
+            {o.total_amount != null && ` · ${formatNumber(o.total_amount, 2)} €`}
           </p>
         </div>
       </div>
@@ -101,7 +102,7 @@ export default async function OrderDetailPage({
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-slate-900">
             {o.total_amount != null
-              ? o.total_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+              ? formatCurrency(o.total_amount)
               : '–'}
           </p>
           <p className="text-xs text-slate-500">Gesamtbetrag</p>
@@ -187,10 +188,10 @@ export default async function OrderDetailPage({
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right text-slate-700">
-                          {item.unit_price.toFixed(2)} €
+                          {formatNumber(item.unit_price, 2)} €
                         </td>
                         <td className="px-4 py-3 text-right font-medium text-slate-900">
-                          {total.toFixed(2)} €
+                          {formatNumber(total, 2)} €
                         </td>
                       </tr>
                     )
@@ -203,7 +204,7 @@ export default async function OrderDetailPage({
                         Summe
                       </td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-slate-900">
-                        {orderItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0).toFixed(2)} €
+                        {formatNumber(orderItems.reduce((sum, i) => sum + i.quantity * i.unit_price, 0), 2)} €
                       </td>
                     </tr>
                   </tfoot>

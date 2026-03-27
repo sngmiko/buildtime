@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Truck, Wrench, AlertTriangle } from 'lucide-react'
 import type { Vehicle, Equipment } from '@/lib/types'
+import { formatNumber } from '@/lib/format'
 
 const VEHICLE_TYPES: Record<string, string> = { car: 'PKW', van: 'Transporter', truck: 'LKW' }
 const STATUS_COLORS: Record<string, string> = {
@@ -94,7 +95,7 @@ export default async function FuhrparkPage({
                   <div>
                     <h3 className="font-semibold text-slate-900">{v.license_plate}</h3>
                     <p className="text-sm text-slate-500">{v.make} {v.model} · {VEHICLE_TYPES[v.type]}</p>
-                    {v.mileage > 0 && <p className="text-xs text-slate-400">{v.mileage.toLocaleString('de-DE')} km</p>}
+                    {v.mileage > 0 && <p className="text-xs text-slate-400">{formatNumber(v.mileage)} km</p>}
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[v.status]}`}>
                     {STATUS_LABELS[v.status]}

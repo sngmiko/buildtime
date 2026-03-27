@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, FileText } from 'lucide-react'
 import type { Invoice, Customer } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Entwurf',
@@ -110,11 +111,11 @@ export default async function RechnungenPage({
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-semibold text-slate-900">
-                    {invoice.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    {formatCurrency(invoice.total)}
                   </p>
                   {invoice.paid_amount > 0 && invoice.paid_amount < invoice.total && (
                     <p className="text-xs text-slate-500">
-                      Offen: {(invoice.total - invoice.paid_amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                      Offen: {formatCurrency(invoice.total - invoice.paid_amount)}
                     </p>
                   )}
                 </div>

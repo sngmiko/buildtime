@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Building2, TrendingUp } from 'lucide-react'
 import type { CompanyExtended } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 const PLAN_BADGES: Record<string, string> = {
   trial: 'bg-amber-100 text-amber-800',
@@ -63,7 +64,7 @@ export default async function AdminPage() {
         </Card>
         <Card className="p-4 text-center">
           <TrendingUp className="mx-auto mb-2 h-6 w-6 text-emerald-600" />
-          <p className="text-2xl font-bold text-slate-900">{mrr.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-2xl font-bold text-slate-900">{formatCurrency(mrr)}</p>
           <p className="text-xs text-slate-500">MRR</p>
         </Card>
       </div>

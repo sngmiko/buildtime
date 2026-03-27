@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { HardHat, Plus, MapPin, Calendar, Euro, Users } from 'lucide-react'
 import type { ConstructionSite } from '@/lib/types'
+import { formatNumber } from '@/lib/format'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: 'Aktiv', color: 'bg-emerald-100 text-emerald-700' },
@@ -120,7 +121,7 @@ export default async function BaustellenPage() {
                     {site.budget && (
                       <span className="flex items-center gap-1">
                         <Euro className="h-3 w-3" />
-                        {Number(site.budget).toLocaleString('de-DE', { maximumFractionDigits: 0 })} €
+                        {formatNumber(Number(site.budget), 0)} €
                       </span>
                     )}
                     {workerCount > 0 && (

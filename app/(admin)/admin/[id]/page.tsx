@@ -7,6 +7,7 @@ import { ChevronLeft, Mail, Calendar, Shield } from 'lucide-react'
 import { AdminEditForm } from './edit-form'
 import { UserManagement } from './user-management'
 import type { CompanyExtended, Profile } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 export default async function AdminCompanyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -45,7 +46,7 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
           <h1 className="text-2xl font-bold text-slate-900">{c.name}</h1>
           <p className="text-sm text-slate-500">
             Plan: {c.plan} · {(profiles as Profile[])?.length || 0} / {c.max_employees} Mitarbeiter ·{' '}
-            {c.plan === 'trial' ? `${trialDaysLeft} Tage Trial verbleibend` : `${Number(c.monthly_price).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}/Monat`}
+            {c.plan === 'trial' ? `${trialDaysLeft} Tage Trial verbleibend` : `${formatCurrency(Number(c.monthly_price))}/Monat`}
           </p>
         </div>
       </div>

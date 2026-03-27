@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Package, AlertTriangle } from 'lucide-react'
 import type { Material, Supplier, PurchaseOrder } from '@/lib/types'
+import { formatNumber } from '@/lib/format'
 
 const UNIT_LABELS: Record<string, string> = {
   piece: 'Stk', m: 'm', m2: 'm²', m3: 'm³', kg: 'kg', l: 'l', pack: 'Pack.',
@@ -139,7 +140,7 @@ export default async function LagerPage({
                       )}
                       {m.price_per_unit != null && (
                         <p className="text-xs text-slate-400 mt-1">
-                          {m.price_per_unit.toFixed(2)} €/{UNIT_LABELS[m.unit]}
+                          {formatNumber(m.price_per_unit, 2)} €/{UNIT_LABELS[m.unit]}
                         </p>
                       )}
                     </div>
@@ -216,7 +217,7 @@ export default async function LagerPage({
                     </h3>
                     <p className="text-sm text-slate-500">
                       {new Date(o.order_date).toLocaleDateString('de-DE')}
-                      {o.total_amount != null && ` · ${o.total_amount.toFixed(2)} €`}
+                      {o.total_amount != null && ` · ${formatNumber(o.total_amount, 2)} €`}
                     </p>
                     {o.notes && <p className="text-xs text-slate-400 mt-1">{o.notes}</p>}
                   </div>
