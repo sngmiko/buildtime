@@ -3,9 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/top-bar'
 import { ManagerSidebar } from '@/components/layout/manager-sidebar'
 import { WorkerBottomNav } from '@/components/layout/worker-bottom-nav'
+import { TrialBanner } from '@/components/layout/trial-banner'
 import { ToastProvider } from '@/components/ui/toast'
 import { generateNotifications } from '@/lib/queries/notifications'
-import type { Profile, Company } from '@/lib/types'
+import type { Profile, Company, CompanyExtended } from '@/lib/types'
 
 export default async function AppLayout({
   children,
@@ -43,6 +44,7 @@ export default async function AppLayout({
   return (
     <div className="flex flex-1 flex-col">
       <TopBar userName={userName} companyName={companyName} notifications={notifications} />
+      {company && <TrialBanner company={company as CompanyExtended} />}
       <div className="flex flex-1">
         {!isWorker && <ManagerSidebar role={profile.role} />}
         <ToastProvider>

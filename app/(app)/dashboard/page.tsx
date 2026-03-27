@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import {
   Briefcase, TrendingUp, TrendingDown, Euro, Users, AlertTriangle,
-  Clock, Star, CloudSun
+  Clock, Star, CloudSun, Check
 } from 'lucide-react'
+import type { OnboardingProgress } from '@/lib/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -41,6 +43,7 @@ export default async function DashboardPage() {
     { data: expiringTax },
     { data: vehicleInspections },
     { data: lowStockMaterials },
+    { data: onboardingProgressRaw },
   ] = await Promise.all([
     // 1. In-progress orders count
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
@@ -68,6 +71,8 @@ export default async function DashboardPage() {
       .gte('next_inspection', todayStr).lte('next_inspection', in30Str),
     // 11. Low stock materials
     supabase.from('materials').select('name, current_stock, min_stock'),
+    // 12. Onboarding progress
+    supabase.from('onboarding_progress').select('*').eq('company_id', profile.company_id).maybeSingle(),
   ])
 
   // Calculate open quotes value
@@ -130,6 +135,18 @@ export default async function DashboardPage() {
 
   // Low stock
   const lowStock = (lowStockMaterials || []).filter(m => m.current_stock <= m.min_stock)
+
+  // Onboarding checklist
+  const onboarding = onboardingProgressRaw as OnboardingProgress | null
+  const onboardingSteps = onboarding ? [
+    { label: 'Firmendaten vervollständigen', done: onboarding.profile_completed, href: '/onboarding' },
+    { label: 'Erste Baustelle anlegen', done: onboarding.first_site_created, href: '/baustellen' },
+    { label: 'Mitarbeiter einladen', done: onboarding.first_employee_invited, href: '/mitarbeiter' },
+    { label: 'Erste Zeiterfassung', done: onboarding.first_time_entry, href: '/zeiterfassung' },
+    { label: 'Ersten Auftrag erstellen', done: onboarding.first_order_created, href: '/auftraege' },
+  ] : []
+  const doneCount = onboardingSteps.filter(s => s.done).length
+  const allDone = doneCount === onboardingSteps.length
 
   const hour = now.getHours()
   const greeting = hour < 12 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend'
@@ -215,6 +232,26 @@ export default async function DashboardPage() {
           )
         })}
       </div>
+
+      {/* Onboarding checklist */}
+      {onboarding && !allDone && (
+        <Card>
+          <h2 className="mb-3 text-lg font-semibold">Erste Schritte</h2>
+          <div className="space-y-2">
+            {onboardingSteps.map(s => (
+              <Link key={s.label} href={s.href} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-50">
+                <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${s.done ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'}`}>
+                  {s.done && <Check className="h-3 w-3 text-white" />}
+                </div>
+                <span className={`text-sm ${s.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{s.label}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(doneCount / 5) * 100}%` }} />
+          </div>
+        </Card>
+      )}
 
       {/* Row 2: Margin analysis */}
       {ordersWithMargin.length > 0 && (
