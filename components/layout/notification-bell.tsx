@@ -26,7 +26,7 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+        className="relative rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-colors"
       >
         <Bell className="h-5 w-5" />
         {count > 0 && (
@@ -39,9 +39,9 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-xl">
-            <div className="border-b border-slate-100 px-4 py-3">
-              <h3 className="text-sm font-semibold text-slate-900">Benachrichtigungen</h3>
+          <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-white/10 bg-[#1a1a2e] shadow-xl">
+            <div className="border-b border-white/10 px-4 py-3">
+              <h3 className="text-sm font-semibold text-slate-100">Benachrichtigungen</h3>
             </div>
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
@@ -52,20 +52,20 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
                     key={i}
                     href={n.link || '#'}
                     onClick={() => setOpen(false)}
-                    className="flex gap-3 border-b border-slate-50 px-4 py-3 hover:bg-slate-50 transition-colors"
+                    className="flex gap-3 border-b border-white/5 px-4 py-3 hover:bg-white/5 transition-colors"
                   >
                     {severityIcons[n.severity as keyof typeof severityIcons] || severityIcons.info}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
-                      <p className="text-xs text-slate-500 truncate">{n.message}</p>
+                      <p className="text-sm font-medium text-slate-100 truncate">{n.title}</p>
+                      <p className="text-xs text-slate-400 truncate">{n.message}</p>
                     </div>
                   </Link>
                 ))
               )}
             </div>
             {notifications.length > 0 && (
-              <div className="border-t border-slate-100 px-4 py-2">
-                <Link href="/benachrichtigungen" onClick={() => setOpen(false)} className="text-xs font-medium text-[#1e3a5f] hover:underline">
+              <div className="border-t border-white/10 px-4 py-2">
+                <Link href="/benachrichtigungen" onClick={() => setOpen(false)} className="text-xs font-medium text-[#f59e0b] hover:underline">
                   Alle anzeigen
                 </Link>
               </div>

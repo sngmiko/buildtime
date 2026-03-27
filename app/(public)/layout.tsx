@@ -41,21 +41,21 @@ export default function PublicLayout({
       </div>
 
       {/* Right: Form area */}
-      <div className="flex flex-1 flex-col items-center justify-center p-6 lg:w-1/2">
+      <div className="flex flex-1 flex-col items-center justify-center p-6 lg:w-1/2 bg-[#0c0c14]">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
-            <h1 className="text-2xl font-bold text-[#1e3a5f]">
+            <h1 className="text-2xl font-bold text-slate-100">
               Build<span className="text-[#f59e0b]">Time</span>
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-400">
               Zeiterfassung für die Baustelle
             </p>
           </div>
           {children}
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p className="mt-6 text-center text-xs text-slate-500">
             Ein Tool von{' '}
-            <a href="https://nomad-solutions.de" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
+            <a href="https://nomad-solutions.de" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">
               Nomad Solutions
             </a>
           </p>

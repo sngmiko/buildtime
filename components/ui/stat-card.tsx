@@ -6,8 +6,8 @@ export function StatCard({
   value,
   subtitle,
   icon: Icon,
-  color = 'text-[#1e3a5f]',
-  bg = 'bg-blue-50',
+  color = 'text-[#f59e0b]',
+  bg = 'bg-blue-500/10',
 }: {
   label: string
   value: string | number
@@ -24,9 +24,9 @@ export function StatCard({
         </div>
       )}
       <div>
-        <p className="text-2xl font-bold text-slate-900" style={{ animation: 'countUp 0.5s ease-out' }}>{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
-        {subtitle && <p className="text-[10px] text-slate-400 mt-0.5">{subtitle}</p>}
+        <p className="text-2xl font-bold text-slate-100" style={{ animation: 'countUp 0.5s ease-out' }}>{value}</p>
+        <p className="text-xs text-slate-400">{label}</p>
+        {subtitle && <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
     </Card>
   )

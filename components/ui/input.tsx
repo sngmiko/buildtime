@@ -10,15 +10,15 @@ export function Input({ label, error, id, className = '', ...props }: InputProps
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
+      <label htmlFor={inputId} className="text-sm font-medium text-slate-400">
         {label}
       </label>
       <input
         id={inputId}
-        className={`h-11 rounded-xl border bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/20 disabled:bg-slate-50 disabled:text-slate-500 ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200'} ${className}`}
+        className={`h-11 rounded-xl border bg-white/5 px-3 text-sm text-slate-100 placeholder:text-slate-500 transition-colors focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b]/30 disabled:bg-white/[0.02] disabled:text-slate-500 ${error ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30' : 'border-white/10'} ${className}`}
         {...props}
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   )
 }

@@ -69,11 +69,11 @@ export function SearchBar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-400 transition-colors hover:border-slate-300 hover:text-slate-500 sm:flex"
+        className="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-400 transition-colors hover:border-white/20 hover:text-slate-300 sm:flex"
       >
         <Search className="h-4 w-4" />
         Suche...
-        <kbd className="ml-4 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">⌘K</kbd>
+        <kbd className="ml-4 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">⌘K</kbd>
       </button>
     )
   }
@@ -81,8 +81,8 @@ export function SearchBar() {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center gap-3 border-b border-slate-200 px-4">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl bg-[#1a1a2e] border border-white/10 shadow-2xl">
+        <div className="flex items-center gap-3 border-b border-white/10 px-4">
           <Search className="h-5 w-5 text-slate-400" />
           <input
             ref={inputRef}
@@ -90,9 +90,9 @@ export function SearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Mitarbeiter, Aufträge, Baustellen suchen..."
-            className="h-14 flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            className="h-14 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
           />
-          <button onClick={() => setOpen(false)} className="rounded p-1 text-slate-400 hover:text-slate-600">
+          <button onClick={() => setOpen(false)} className="rounded p-1 text-slate-400 hover:text-slate-200">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -103,12 +103,12 @@ export function SearchBar() {
               <button
                 key={i}
                 onClick={() => navigate(r.href)}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
               >
-                <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">{r.type}</span>
+                <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-medium text-slate-400">{r.type}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{r.label}</p>
-                  <p className="text-xs text-slate-500 truncate">{r.sublabel}</p>
+                  <p className="text-sm font-medium text-slate-100 truncate">{r.label}</p>
+                  <p className="text-xs text-slate-400 truncate">{r.sublabel}</p>
                 </div>
               </button>
             ))}

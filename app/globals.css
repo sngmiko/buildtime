@@ -50,24 +50,24 @@ button:not(:disabled):active {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0c0c14;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #2a2a3d;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #3a3a4d;
 }
 
 /* Table zebra striping */
 tbody tr:nth-child(even) {
-  background-color: rgba(248, 250, 252, 0.5);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #1a1a2e 25%, #252540 50%, #1a1a2e 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
   border-radius: 8px;
@@ -94,7 +94,7 @@ tbody tr:nth-child(even) {
 
 /* Focus ring */
 *:focus-visible {
-  outline: 2px solid #1e3a5f;
+  outline: 2px solid #f59e0b;
   outline-offset: 2px;
   border-radius: 4px;
 }
