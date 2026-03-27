@@ -66,10 +66,13 @@ export async function updateSubcontractor(subId: string, prevState: Subcontracto
 
 // ─── Assignments ──────────────────────────────────────────────────────────────
 
-export async function createAssignment(prevState: SubcontractorsState, formData: FormData): Promise<SubcontractorsState> {
-  const raw: Record<string, unknown> = {}
-  for (const key of ['subcontractor_id', 'order_id', 'description', 'agreed_amount']) {
-    raw[key] = formData.get(key) || undefined
+export async function createAssignment(subId: string, prevState: SubcontractorsState, formData: FormData): Promise<SubcontractorsState> {
+  const raw: Record<string, unknown> = {
+    subcontractor_id: subId,
+    order_id: formData.get('order_id') || undefined,
+    description: formData.get('description') || undefined,
+    agreed_amount: formData.get('agreed_amount') || undefined,
+    invoiced_amount: formData.get('invoiced_amount') || undefined,
   }
   const validated = subAssignmentSchema.safeParse(raw)
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }

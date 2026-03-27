@@ -16,9 +16,10 @@ export const subcontractorSchema = z.object({
 
 export const subAssignmentSchema = z.object({
   subcontractor_id: z.string().min(1, 'Subunternehmer ist erforderlich'),
-  order_id: z.string().min(1, 'Auftrag ist erforderlich'),
+  order_id: z.string().min(1, 'Auftrag ist erforderlich').or(z.literal('')),
   description: z.string().min(1, 'Beschreibung ist erforderlich').max(500),
-  agreed_amount: z.coerce.number().min(0).optional(),
+  agreed_amount: z.coerce.number().min(0).optional().or(z.literal('')),
+  invoiced_amount: z.coerce.number().min(0).optional().or(z.literal('')),
 })
 
 export type SubcontractorInput = z.infer<typeof subcontractorSchema>

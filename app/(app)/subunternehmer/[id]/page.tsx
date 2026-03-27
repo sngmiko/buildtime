@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, AlertTriangle } from 'lucide-react'
 import { SubEditForm } from './sub-edit-form'
+import { AddAssignmentForm } from './add-assignment-form'
 import type { Subcontractor, SubcontractorAssignment } from '@/lib/types'
 
 export default async function SubDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,9 +16,10 @@ export default async function SubDetailPage({ params }: { params: Promise<{ id: 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/dashboard')
 
-  const [{ data: sub }, { data: assignments }] = await Promise.all([
+  const [{ data: sub }, { data: assignments }, { data: orders }] = await Promise.all([
     supabase.from('subcontractors').select('*').eq('id', id).single(),
     supabase.from('subcontractor_assignments').select('*, orders(title, status)').eq('subcontractor_id', id).order('created_at', { ascending: false }),
+    supabase.from('orders').select('id, title').in('status', ['active', 'draft']).order('title'),
   ])
 
   if (!sub) notFound()
@@ -52,6 +54,7 @@ export default async function SubDetailPage({ params }: { params: Promise<{ id: 
         </Card>
 
         <div className="flex flex-col gap-4">
+          <AddAssignmentForm subId={s.id} orders={(orders || []) as { id: string; title: string }[]} />
           <h2 className="text-lg font-semibold text-slate-900">Einsätze</h2>
           {(!assignments || assignments.length === 0) ? (
             <Card className="py-6 text-center text-sm text-slate-500">Keine Einsätze</Card>
