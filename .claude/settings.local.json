@@ -23,7 +23,8 @@
       "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(app\\\\\\)/dashboard/)",
       "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(app\\\\\\)/stempeln/)",
       "Bash(ls /c/Users/X/Projects/buildtime/.worktrees/phase2a/app/\\\\\\(app\\\\\\)/stempeln/)",
-      "Bash(ls \"C:/Users/X/Projects/buildtime/.worktrees/phase2a/app/\\(app\\)/\")"
+      "Bash(ls \"C:/Users/X/Projects/buildtime/.worktrees/phase2a/app/\\(app\\)/\")",
+      "Bash(ls /c/Users/X/Projects/buildtime/.worktrees/phase2bc/app/\\\\\\(app\\\\\\)/zeiten/)"
     ]
   }
 }
