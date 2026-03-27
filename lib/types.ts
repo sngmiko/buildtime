@@ -334,3 +334,31 @@ export type OrderCost = {
   category: 'subcontractor' | 'material' | 'equipment' | 'vehicle' | 'other'
   description: string; amount: number; date: string; created_at: string
 }
+
+export type Subcontractor = {
+  id: string; company_id: string; name: string; contact_person: string | null
+  email: string | null; phone: string | null; address: string | null; trade: string | null
+  tax_exemption_valid_until: string | null
+  quality_rating: number | null; reliability_rating: number | null; price_rating: number | null
+  notes: string | null; created_at: string; updated_at: string
+}
+
+export type SubcontractorAssignment = {
+  id: string; company_id: string; subcontractor_id: string; order_id: string
+  description: string; agreed_amount: number | null; invoiced_amount: number
+  status: 'active' | 'completed' | 'cancelled'
+  created_at: string; updated_at: string
+}
+
+export type DiaryEntry = {
+  id: string; company_id: string; site_id: string; entry_date: string
+  weather: string | null; temperature: number | null; wind: string | null
+  work_description: string; incidents: string | null; defects: string | null
+  hindrances: string | null; created_by: string
+  created_at: string; updated_at: string
+}
+
+export type DiaryPhoto = {
+  id: string; diary_entry_id: string; file_path: string
+  caption: string | null; created_at: string
+}
