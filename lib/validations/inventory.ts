@@ -27,6 +27,7 @@ export const orderSchema = z.object({
   status: z.enum(['draft', 'ordered', 'partially_delivered', 'delivered', 'cancelled']).optional(),
   total_amount: z.coerce.number().min(0).optional().or(z.literal('')),
   notes: z.string().max(1000).optional().or(z.literal('')),
+  order_id: z.string().optional().or(z.literal('')),
 })
 
 export const stockMovementSchema = z.object({
@@ -35,4 +36,6 @@ export const stockMovementSchema = z.object({
   type: z.enum(['in', 'out', 'return']),
   quantity: z.coerce.number().min(0.01, 'Menge muss größer als 0 sein'),
   notes: z.string().max(500).optional().or(z.literal('')),
+  order_id: z.string().optional().or(z.literal('')),
+  unit_price: z.coerce.number().min(0).optional().or(z.literal('')),
 })

@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import type { Supplier } from '@/lib/types'
 
-export function OrderForm({ suppliers }: { suppliers: Supplier[] }) {
+export function OrderForm({
+  suppliers,
+  activeOrders,
+}: {
+  suppliers: Supplier[]
+  activeOrders: { id: string; title: string }[]
+}) {
   const [state, action, pending] = useActionState<InventoryState, FormData>(createOrder, null)
 
   const today = new Date().toISOString().split('T')[0]
@@ -15,6 +21,11 @@ export function OrderForm({ suppliers }: { suppliers: Supplier[] }) {
   const supplierOptions = [
     { value: '', label: '— Kein Lieferant —' },
     ...suppliers.map(s => ({ value: s.id, label: s.name })),
+  ]
+
+  const orderOptions = [
+    { value: '', label: '— Kein Auftrag —' },
+    ...activeOrders.map(o => ({ value: o.id, label: o.title })),
   ]
 
   return (
@@ -43,6 +54,11 @@ export function OrderForm({ suppliers }: { suppliers: Supplier[] }) {
           error={state?.errors?.total_amount?.[0]}
         />
       </div>
+      <Select
+        label="Für Auftrag (optional)"
+        name="order_id"
+        options={orderOptions}
+      />
       <Input
         label="Notizen"
         name="notes"

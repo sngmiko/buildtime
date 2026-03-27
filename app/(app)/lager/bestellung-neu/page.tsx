@@ -13,7 +13,10 @@ export default async function BestellungNeuPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const { data: suppliers } = await supabase.from('suppliers').select('id, name').order('name')
+  const [{ data: suppliers }, { data: activeOrders }] = await Promise.all([
+    supabase.from('suppliers').select('id, name').order('name'),
+    supabase.from('orders').select('id, title').in('status', ['commissioned', 'in_progress']).order('title'),
+  ])
 
   return (
     <div className="flex flex-col gap-6">
@@ -23,7 +26,10 @@ export default async function BestellungNeuPage() {
         <h1 className="text-2xl font-bold text-slate-900">Neue Bestellung</h1>
       </div>
       <Card className="max-w-lg">
-        <OrderForm suppliers={(suppliers as Supplier[]) || []} />
+        <OrderForm
+          suppliers={(suppliers as Supplier[]) || []}
+          activeOrders={(activeOrders || []) as { id: string; title: string }[]}
+        />
       </Card>
     </div>
   )

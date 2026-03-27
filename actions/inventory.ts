@@ -102,7 +102,7 @@ export async function updateMaterial(materialId: string, prevState: InventorySta
 
 export async function createOrder(prevState: InventoryState, formData: FormData): Promise<InventoryState> {
   const raw: Record<string, unknown> = {}
-  for (const key of ['supplier_id', 'order_date', 'status', 'total_amount', 'notes']) {
+  for (const key of ['supplier_id', 'order_date', 'status', 'total_amount', 'notes', 'order_id']) {
     raw[key] = formData.get(key) || undefined
   }
   const validated = orderSchema.safeParse(raw)
@@ -118,6 +118,7 @@ export async function createOrder(prevState: InventoryState, formData: FormData)
     company_id: profile.company_id,
     status: 'draft',
     ...validated.data,
+    order_id: validated.data.order_id || null,
   }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
 
@@ -150,6 +151,8 @@ export async function addStockMovement(materialId: string, prevState: InventoryS
     type: formData.get('type') || undefined,
     quantity: formData.get('quantity') || undefined,
     notes: formData.get('notes') || undefined,
+    order_id: formData.get('order_id') || undefined,
+    unit_price: formData.get('unit_price') || undefined,
   }
   const validated = stockMovementSchema.safeParse(raw)
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
@@ -166,6 +169,8 @@ export async function addStockMovement(materialId: string, prevState: InventoryS
     ...validated.data,
     site_id: validated.data.site_id || null,
     notes: validated.data.notes || null,
+    order_id: validated.data.order_id || null,
+    unit_price: validated.data.unit_price || null,
   }
 
   const { error } = await supabase.from('stock_movements').insert(d)
@@ -174,7 +179,7 @@ export async function addStockMovement(materialId: string, prevState: InventoryS
   // Auto-update current_stock
   const { data: material } = await supabase
     .from('materials')
-    .select('current_stock')
+    .select('current_stock, name, price_per_unit')
     .eq('id', materialId)
     .single()
 
@@ -184,6 +189,24 @@ export async function addStockMovement(materialId: string, prevState: InventoryS
       : -validated.data.quantity
     const newStock = Math.max(0, (material.current_stock || 0) + delta)
     await supabase.from('materials').update({ current_stock: newStock }).eq('id', materialId)
+  }
+
+  // Auto-create order cost when material is taken out for a project
+  if (validated.data.type === 'out' && validated.data.order_id) {
+    const mat = material
+    if (mat) {
+      const unitPrice = (validated.data.unit_price as number | undefined) || mat.price_per_unit || 0
+      const totalCost = unitPrice * validated.data.quantity
+
+      await supabase.from('order_costs').insert({
+        company_id: profile.company_id,
+        order_id: validated.data.order_id,
+        category: 'material',
+        description: `${mat.name} (${validated.data.quantity} Stk.)`,
+        amount: totalCost,
+        date: new Date().toISOString().split('T')[0],
+      })
+    }
   }
 
   return { success: true, message: 'Lagerbewegung gespeichert' }

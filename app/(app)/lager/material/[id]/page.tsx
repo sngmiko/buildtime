@@ -37,7 +37,7 @@ export default async function MaterialDetailPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const [{ data: material }, { data: movements }, { data: suppliers }, { data: activeSites }] = await Promise.all([
+  const [{ data: material }, { data: movements }, { data: suppliers }, { data: activeSites }, { data: activeOrders }] = await Promise.all([
     supabase.from('materials').select('*, suppliers(name)').eq('id', id).single(),
     supabase
       .from('stock_movements')
@@ -47,6 +47,7 @@ export default async function MaterialDetailPage({
       .limit(30),
     supabase.from('suppliers').select('id, name').order('name'),
     supabase.from('construction_sites').select('id, name').eq('status', 'active').order('name'),
+    supabase.from('orders').select('id, title').in('status', ['commissioned', 'in_progress']).order('title'),
   ])
 
   if (!material) notFound()
@@ -114,7 +115,12 @@ export default async function MaterialDetailPage({
 
         {/* Stock movement history */}
         <div className="flex flex-col gap-4">
-          <StockMovementForm materialId={m.id} sites={(activeSites || []) as { id: string; name: string }[]} />
+          <StockMovementForm
+            materialId={m.id}
+            sites={(activeSites || []) as { id: string; name: string }[]}
+            orders={(activeOrders || []) as { id: string; title: string }[]}
+            defaultUnitPrice={m.price_per_unit}
+          />
           <h2 className="text-lg font-semibold text-slate-900">Lagerbewegungen</h2>
           {(!movements || movements.length === 0) ? (
             <Card className="py-8 text-center text-sm text-slate-500">
