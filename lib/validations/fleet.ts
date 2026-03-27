@@ -12,6 +12,17 @@ export const vehicleSchema = z.object({
   insurance_cost: z.coerce.number().min(0).optional().or(z.literal('')),
   tax_cost: z.coerce.number().min(0).optional().or(z.literal('')),
   next_inspection: z.string().optional().or(z.literal('')),
+  acquisition_type: z.enum(['purchased', 'leased', 'financed', 'rented']).optional().default('purchased'),
+  purchase_price: z.coerce.number().min(0).optional().or(z.literal('')),
+  purchase_date: z.string().optional().or(z.literal('')),
+  monthly_rate: z.coerce.number().min(0).optional().or(z.literal('')),
+  contract_start: z.string().optional().or(z.literal('')),
+  contract_end: z.string().optional().or(z.literal('')),
+  down_payment: z.coerce.number().min(0).optional().or(z.literal('')),
+  residual_value: z.coerce.number().min(0).optional().or(z.literal('')),
+  interest_rate: z.coerce.number().min(0).max(100).optional().or(z.literal('')),
+  loan_amount: z.coerce.number().min(0).optional().or(z.literal('')),
+  rental_daily_rate: z.coerce.number().min(0).optional().or(z.literal('')),
 })
 
 export const equipmentSchema = z.object({

@@ -12,7 +12,7 @@ export type FleetState = {
 
 export async function createVehicle(prevState: FleetState, formData: FormData): Promise<FleetState> {
   const raw: Record<string, unknown> = {}
-  for (const key of ['license_plate','make','model','year','type','mileage','status','leasing_cost','insurance_cost','tax_cost','next_inspection']) {
+  for (const key of ['license_plate','make','model','year','type','mileage','status','leasing_cost','insurance_cost','tax_cost','next_inspection','acquisition_type','purchase_price','purchase_date','monthly_rate','contract_start','contract_end','down_payment','residual_value','interest_rate','loan_amount','rental_daily_rate']) {
     raw[key] = formData.get(key) || undefined
   }
   const validated = vehicleSchema.safeParse(raw)
@@ -34,7 +34,7 @@ export async function createVehicle(prevState: FleetState, formData: FormData): 
 
 export async function updateVehicle(vehicleId: string, prevState: FleetState, formData: FormData): Promise<FleetState> {
   const raw: Record<string, unknown> = {}
-  for (const key of ['license_plate','make','model','year','type','mileage','status','leasing_cost','insurance_cost','tax_cost','next_inspection']) {
+  for (const key of ['license_plate','make','model','year','type','mileage','status','leasing_cost','insurance_cost','tax_cost','next_inspection','acquisition_type','purchase_price','purchase_date','monthly_rate','contract_start','contract_end','down_payment','residual_value','interest_rate','loan_amount','rental_daily_rate']) {
     raw[key] = formData.get(key) || undefined
   }
   const validated = vehicleSchema.safeParse(raw)

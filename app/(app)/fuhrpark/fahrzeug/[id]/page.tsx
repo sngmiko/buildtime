@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
-import { ChevronLeft, Fuel, Route, Wrench } from 'lucide-react'
+import { ChevronLeft, Fuel, Route, Wrench, CreditCard } from 'lucide-react'
 import { VehicleEditForm } from './vehicle-edit-form'
 import { AddFuelLogForm, AddTripLogForm } from './fuel-trip-forms'
 import type { Vehicle, FuelLog, TripLog } from '@/lib/types'
@@ -40,10 +40,23 @@ export default async function VehicleDetailPage({
 
   const STATUS_LABELS: Record<string, string> = { available: 'Verfügbar', in_use: 'Im Einsatz', maintenance: 'Wartung', decommissioned: 'Stillgelegt' }
   const TYPE_LABELS: Record<string, string> = { car: 'PKW', van: 'Transporter', truck: 'LKW' }
+  const ACQUISITION_LABELS: Record<string, string> = { purchased: 'Gekauft', leased: 'Geleast', financed: 'Finanziert', rented: 'Gemietet' }
 
   // Calculate total fuel costs
   const totalFuelCost = (fuelLogs as FuelLog[] || []).reduce((s, f) => s + Number(f.cost), 0)
   const totalKm = (tripLogs as TripLog[] || []).reduce((s, t) => s + Number(t.km), 0)
+
+  // Calculate financing summary
+  const monthlyFixed = (v.monthly_rate || 0) + (v.insurance_cost || 0) + (v.tax_cost || 0)
+  let contractMonths = 0
+  if (v.contract_start && v.contract_end) {
+    const start = new Date(v.contract_start)
+    const end = new Date(v.contract_end)
+    contractMonths = Math.max(0, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()))
+  }
+  const totalFinancingCost = contractMonths > 0
+    ? monthlyFixed * contractMonths + (v.down_payment || 0) + totalFuelCost
+    : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,6 +94,7 @@ export default async function VehicleDetailPage({
       <div className="flex gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">
         {[
           { id: 'details', label: 'Details', icon: Wrench },
+          { id: 'financing', label: 'Finanzierung', icon: CreditCard },
           { id: 'fuel', label: 'Tankbuch', icon: Fuel },
           { id: 'trips', label: 'Fahrtenbuch', icon: Route },
         ].map((t) => {
@@ -99,6 +113,91 @@ export default async function VehicleDetailPage({
         <Card className="max-w-lg">
           <VehicleEditForm vehicle={v} />
         </Card>
+      )}
+
+      {activeTab === 'financing' && (
+        <div className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card className="p-4 text-center">
+              <p className="text-lg font-bold text-slate-900">{ACQUISITION_LABELS[v.acquisition_type] || '–'}</p>
+              <p className="text-xs text-slate-500">Art der Anschaffung</p>
+            </Card>
+            <Card className="p-4 text-center">
+              <p className="text-lg font-bold text-slate-900">
+                {v.purchase_price != null
+                  ? v.purchase_price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+                  : v.monthly_rate != null
+                  ? `${v.monthly_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} / Mo.`
+                  : '–'}
+              </p>
+              <p className="text-xs text-slate-500">{v.purchase_price != null ? 'Kaufpreis' : 'Monatliche Rate'}</p>
+            </Card>
+            <Card className="p-4 text-center">
+              <p className="text-lg font-bold text-slate-900">
+                {v.contract_start && v.contract_end
+                  ? `${new Date(v.contract_start).toLocaleDateString('de-DE')} – ${new Date(v.contract_end).toLocaleDateString('de-DE')}`
+                  : v.purchase_date
+                  ? new Date(v.purchase_date).toLocaleDateString('de-DE')
+                  : '–'}
+              </p>
+              <p className="text-xs text-slate-500">{v.contract_start ? 'Vertragslaufzeit' : 'Kaufdatum'}</p>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-4">
+            {v.down_payment != null && (
+              <Card className="p-4 text-center">
+                <p className="text-lg font-bold text-slate-900">{v.down_payment.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-xs text-slate-500">Anzahlung</p>
+              </Card>
+            )}
+            {v.residual_value != null && (
+              <Card className="p-4 text-center">
+                <p className="text-lg font-bold text-slate-900">{v.residual_value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-xs text-slate-500">Restwert</p>
+              </Card>
+            )}
+            {v.interest_rate != null && (
+              <Card className="p-4 text-center">
+                <p className="text-lg font-bold text-slate-900">{v.interest_rate.toFixed(2)} %</p>
+                <p className="text-xs text-slate-500">Zinssatz</p>
+              </Card>
+            )}
+            {v.loan_amount != null && (
+              <Card className="p-4 text-center">
+                <p className="text-lg font-bold text-slate-900">{v.loan_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-xs text-slate-500">Kreditbetrag</p>
+              </Card>
+            )}
+            {v.rental_daily_rate != null && (
+              <Card className="p-4 text-center">
+                <p className="text-lg font-bold text-slate-900">{v.rental_daily_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} / Tag</p>
+                <p className="text-xs text-slate-500">Tagesmiete</p>
+              </Card>
+            )}
+          </div>
+
+          {monthlyFixed > 0 && (
+            <Card className="p-4">
+              <h3 className="mb-3 font-semibold text-slate-900">Monatliche Fixkosten</h3>
+              <div className="flex flex-col gap-1 text-sm">
+                {v.monthly_rate != null && <div className="flex justify-between"><span className="text-slate-600">Rate / Leasing</span><span className="font-medium">{v.monthly_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
+                {v.insurance_cost != null && <div className="flex justify-between"><span className="text-slate-600">Versicherung</span><span className="font-medium">{v.insurance_cost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
+                {v.tax_cost != null && <div className="flex justify-between"><span className="text-slate-600">KFZ-Steuer</span><span className="font-medium">{v.tax_cost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
+                <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 font-semibold">
+                  <span>Gesamt / Monat</span>
+                  <span style={{ color: '#1e3a5f' }}>{monthlyFixed.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                </div>
+                {totalFinancingCost != null && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Gesamtkosten ({contractMonths} Monate inkl. Kraftstoff)</span>
+                    <span className="font-semibold" style={{ color: '#f59e0b' }}>{totalFinancingCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+        </div>
       )}
 
       {activeTab === 'fuel' && (

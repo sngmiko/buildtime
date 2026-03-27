@@ -174,6 +174,17 @@ export type Vehicle = {
   insurance_cost: number | null
   tax_cost: number | null
   next_inspection: string | null
+  acquisition_type: 'purchased' | 'leased' | 'financed' | 'rented'
+  purchase_price: number | null
+  purchase_date: string | null
+  monthly_rate: number | null
+  contract_start: string | null
+  contract_end: string | null
+  down_payment: number | null
+  residual_value: number | null
+  interest_rate: number | null
+  loan_amount: number | null
+  rental_daily_rate: number | null
   created_at: string
   updated_at: string
 }
@@ -275,6 +286,7 @@ export type PurchaseOrder = {
   status: PurchaseOrderStatus
   total_amount: number | null
   notes: string | null
+  order_id: string | null
   created_at: string
   updated_at: string
 }
@@ -300,6 +312,8 @@ export type StockMovement = {
   quantity: number
   notes: string | null
   created_by: string
+  order_id: string | null
+  unit_price: number | null
   created_at: string
 }
 
