@@ -65,3 +65,93 @@ export type TimeEntry = {
   edited_by: string | null
   edited_at: string | null
 }
+
+export type ContractType = 'permanent' | 'temporary' | 'minijob' | 'intern'
+
+export type ProfileExtended = Profile & {
+  address: string | null
+  birth_date: string | null
+  nationality: string | null
+  languages: string[] | null
+  contract_start: string | null
+  contract_type: ContractType | null
+  notice_period: string | null
+  probation_end: string | null
+  hourly_rate: number | null
+  monthly_salary: number | null
+  tax_class: string | null
+  social_security_number: string | null
+  health_insurance: string | null
+  iban: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  emergency_contact_relation: string | null
+  annual_leave_days: number
+}
+
+export type Qualification = {
+  id: string
+  company_id: string
+  user_id: string
+  name: string
+  issued_date: string | null
+  expiry_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type SafetyBriefing = {
+  id: string
+  company_id: string
+  user_id: string
+  topic: string
+  briefing_date: string
+  next_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DocCategory = 'contract' | 'certificate' | 'license' | 'residence_permit' | 'other'
+
+export type EmployeeDocument = {
+  id: string
+  company_id: string
+  user_id: string
+  name: string
+  category: DocCategory
+  file_path: string
+  file_size: number | null
+  uploaded_at: string
+}
+
+export type LeaveType = 'vacation' | 'sick' | 'unpaid' | 'special'
+export type LeaveStatus = 'pending' | 'approved' | 'rejected'
+
+export type LeaveRequest = {
+  id: string
+  company_id: string
+  user_id: string
+  start_date: string
+  end_date: string
+  days: number
+  type: LeaveType
+  status: LeaveStatus
+  approved_by: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type SickDay = {
+  id: string
+  company_id: string
+  user_id: string
+  start_date: string
+  end_date: string
+  days: number
+  has_certificate: boolean
+  notes: string | null
+  created_at: string
+}
