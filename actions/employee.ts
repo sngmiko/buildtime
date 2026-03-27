@@ -313,6 +313,41 @@ export async function addSickDay(
 }
 
 // ============================================================================
+// WORKER SELF-SERVICE SICK REPORTING
+// ============================================================================
+export async function reportSick(prevState: EmployeeState, formData: FormData): Promise<EmployeeState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Nicht angemeldet' }
+
+  const { data: profile } = await supabase.from('profiles').select('company_id').eq('id', user.id).single()
+  if (!profile) return { message: 'Profil nicht gefunden' }
+
+  const startDate = formData.get('start_date') as string
+  const endDate = formData.get('end_date') as string
+  if (!startDate || !endDate) return { message: 'Datum ist erforderlich' }
+
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000) + 1)
+
+  const { error } = await supabase.from('sick_days').insert({
+    company_id: profile.company_id,
+    user_id: user.id,
+    start_date: startDate,
+    end_date: endDate,
+    days,
+    reported_by: user.id,
+    status: 'reported',
+    has_certificate: formData.get('has_certificate') === 'on',
+    notes: formData.get('notes') || null,
+  })
+
+  if (error) return { message: 'Krankmeldung konnte nicht gespeichert werden' }
+  return { success: true, message: 'Krankmeldung eingereicht. Gute Besserung!' }
+}
+
+// ============================================================================
 // COST CALCULATOR
 // ============================================================================
 export async function calculateEmployeeCost(employeeId: string): Promise<{
