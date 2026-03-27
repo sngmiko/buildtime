@@ -1,13 +1,21 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { getOrderFullDetails } from '@/lib/queries/order-details'
 import { Card } from '@/components/ui/card'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
 import { OrderDetailTabs } from './order-tabs'
-import { calculateOrderProfitability } from '@/actions/orders'
-import type { Order, Customer, OrderItem, OrderCost, OrderAssignment, ConstructionSite } from '@/lib/types'
 
-export default async function AuftragDetailPage({
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  quote: { label: 'Angebot', color: 'bg-slate-100 text-slate-700' },
+  commissioned: { label: 'Beauftragt', color: 'bg-blue-100 text-blue-700' },
+  in_progress: { label: 'In Arbeit', color: 'bg-emerald-100 text-emerald-700' },
+  acceptance: { label: 'Abnahme', color: 'bg-amber-100 text-amber-700' },
+  completed: { label: 'Abgeschlossen', color: 'bg-slate-100 text-slate-600' },
+  complaint: { label: 'Reklamation', color: 'bg-red-100 text-red-700' },
+}
+
+export default async function OrderDetailPage({
   params,
   searchParams,
 }: {
@@ -16,80 +24,25 @@ export default async function AuftragDetailPage({
 }) {
   const { id } = await params
   const { tab } = await searchParams
-  const activeTab = tab || 'uebersicht'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/dashboard')
 
-  const { data: order } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const details = await getOrderFullDetails(supabase, id)
+  if (!details.order) notFound()
 
-  if (!order) notFound()
+  const status = STATUS_LABELS[details.order.status as string] || STATUS_LABELS.quote
+  const f = details.financials
+  const marginColor = f.margin >= 15 ? 'text-emerald-600' : f.margin >= 5 ? 'text-amber-600' : 'text-red-600'
+  const MarginIcon = f.margin >= 0 ? TrendingUp : TrendingDown
 
-  const typedOrder = order as Order
-
-  const [
-    { data: customer },
-    { data: site },
-    { data: items },
-    { data: costs },
-    { data: assignments },
-  ] = await Promise.all([
-    supabase.from('customers').select('*').eq('id', typedOrder.customer_id).single(),
-    typedOrder.site_id
-      ? supabase.from('construction_sites').select('*').eq('id', typedOrder.site_id).single()
-      : Promise.resolve({ data: null }),
-    supabase.from('order_items').select('*').eq('order_id', id).order('position'),
-    supabase.from('order_costs').select('*').eq('order_id', id).order('date', { ascending: false }),
-    supabase.from('order_assignments').select('*').eq('order_id', id).order('created_at'),
-  ])
-
-  // Resolve assignment names
-  const typedAssignments = (assignments as OrderAssignment[] || [])
-  const employeeIds = typedAssignments.filter(a => a.resource_type === 'employee').map(a => a.resource_id)
-  const vehicleIds = typedAssignments.filter(a => a.resource_type === 'vehicle').map(a => a.resource_id)
-  const equipmentIds = typedAssignments.filter(a => a.resource_type === 'equipment').map(a => a.resource_id)
-
-  const [
-    { data: empProfiles },
-    { data: vehicles },
-    { data: equipment },
-  ] = await Promise.all([
-    employeeIds.length > 0
-      ? supabase.from('profiles').select('id, first_name, last_name').in('id', employeeIds)
-      : Promise.resolve({ data: [] }),
-    vehicleIds.length > 0
-      ? supabase.from('vehicles').select('id, make, model, license_plate').in('id', vehicleIds)
-      : Promise.resolve({ data: [] }),
-    equipmentIds.length > 0
-      ? supabase.from('equipment').select('id, name').in('id', equipmentIds)
-      : Promise.resolve({ data: [] }),
-  ])
-
-  const nameMap = new Map<string, string>()
-  for (const p of empProfiles || []) nameMap.set(p.id, `${p.first_name} ${p.last_name}`)
-  for (const v of vehicles || []) nameMap.set(v.id, `${v.make} ${v.model} (${v.license_plate})`)
-  for (const e of equipment || []) nameMap.set(e.id, e.name)
-
-  const assignmentsWithNames = typedAssignments.map(a => ({ ...a, name: nameMap.get(a.resource_id) }))
-
-  const profitability = await calculateOrderProfitability(id)
-
-  const STATUS_LABELS: Record<string, string> = {
-    quote: 'Angebot',
-    commissioned: 'Beauftragt',
-    in_progress: 'In Arbeit',
-    acceptance: 'Abnahme',
-    completed: 'Abgeschlossen',
-    complaint: 'Reklamation',
-  }
+  // Get sites for forms
+  const { data: sites } = await supabase.from('construction_sites').select('id, name').eq('status', 'active').order('name')
+  const { data: workers } = await supabase.from('profiles').select('id, first_name, last_name, role, hourly_rate').in('role', ['worker', 'foreman']).order('last_name')
 
   return (
     <div className="flex flex-col gap-6">
@@ -97,24 +50,62 @@ export default async function AuftragDetailPage({
         <Link href="/auftraege" className="text-slate-500 hover:text-slate-900">
           <ChevronLeft className="h-5 w-5" />
         </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-slate-900 truncate">{typedOrder.title}</h1>
-          <p className="text-sm text-slate-500">
-            {STATUS_LABELS[typedOrder.status]}
-            {customer && ` · ${(customer as Customer).name}`}
-          </p>
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-slate-900">{details.order.title as string}</h1>
+            <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.color}`}>{status.label}</span>
+          </div>
+          {details.order.customers && (
+            <p className="text-sm text-slate-500">
+              {(details.order.customers as { name: string }).name}
+              {details.order.construction_sites && ` · ${(details.order.construction_sites as { name: string }).name}`}
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Financial summary bar */}
+      <div className="grid gap-4 sm:grid-cols-5">
+        <Card className="p-4 text-center">
+          <p className="text-xs text-slate-500">Auftragswert</p>
+          <p className="text-xl font-bold text-slate-900">{f.revenue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-xs text-slate-500">Personalkosten</p>
+          <p className="text-xl font-bold text-blue-600">{f.laborCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-xs text-slate-500">Sonstige Kosten</p>
+          <p className="text-xl font-bold text-slate-700">{(f.externalCosts + f.subCosts).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-xs text-slate-500">Gewinn</p>
+          <p className={`text-xl font-bold ${f.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{f.profit.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="text-xs text-slate-500">Marge</p>
+          <div className="flex items-center justify-center gap-1">
+            <MarginIcon className={`h-5 w-5 ${marginColor}`} />
+            <p className={`text-xl font-bold ${marginColor}`}>{f.margin}%</p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Budget warning */}
+      {details.order.budget && f.totalCosts / Number(details.order.budget) >= 0.8 && (
+        <Card className="border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-amber-700">
+            <AlertTriangle className="h-4 w-4" />
+            Budget-Warnung: {Math.round((f.totalCosts / Number(details.order.budget)) * 100)}% des Budgets erreicht
+          </div>
+        </Card>
+      )}
+
       <OrderDetailTabs
-        order={typedOrder}
-        customer={customer as Customer | null}
-        site={site as ConstructionSite | null}
-        items={(items as OrderItem[]) || []}
-        costs={(costs as OrderCost[]) || []}
-        assignments={assignmentsWithNames}
-        profitability={profitability}
-        activeTab={activeTab}
+        details={details}
+        activeTab={tab || 'overview'}
+        sites={(sites || []) as { id: string; name: string }[]}
+        workers={(workers || []) as { id: string; first_name: string; last_name: string; role: string; hourly_rate: number | null }[]}
       />
     </div>
   )
