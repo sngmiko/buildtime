@@ -33,3 +33,33 @@ export type Invitation = {
   accepted_at: string | null
   created_at: string
 }
+
+export type SiteStatus = 'active' | 'completed' | 'paused'
+
+export type ConstructionSite = {
+  id: string
+  company_id: string
+  name: string
+  address: string | null
+  status: SiteStatus
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export type TimeEntry = {
+  id: string
+  company_id: string
+  user_id: string
+  site_id: string
+  clock_in: string
+  clock_out: string | null
+  clock_in_lat: number | null
+  clock_in_lng: number | null
+  clock_out_lat: number | null
+  clock_out_lng: number | null
+  break_minutes: number
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
