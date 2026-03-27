@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Users, Building2, User, Menu, X, HardHat, ClipboardList, Truck, Package } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, User, Menu, X, HardHat, ClipboardList, Truck, Package, Briefcase } from 'lucide-react'
 import type { UserRole } from '@/lib/types'
 import type { LucideIcon } from 'lucide-react'
 
@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/zeitmanagement', label: 'Zeitmanagement', icon: ClipboardList, roles: ['owner', 'foreman'] },
   { href: '/fuhrpark', label: 'Fuhrpark', icon: Truck, roles: ['owner', 'foreman'] },
   { href: '/lager', label: 'Lager & Einkauf', icon: Package, roles: ['owner', 'foreman'] },
+  { href: '/auftraege', label: 'Aufträge', icon: Briefcase, roles: ['owner', 'foreman'] },
   { href: '/firma', label: 'Firma', icon: Building2, roles: ['owner'] },
   { href: '/profil', label: 'Profil', icon: User, roles: ['owner', 'foreman'] },
 ]

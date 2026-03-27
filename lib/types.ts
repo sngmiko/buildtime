@@ -265,14 +265,14 @@ export type Material = {
   updated_at: string
 }
 
-export type OrderStatus = 'draft' | 'ordered' | 'partially_delivered' | 'delivered' | 'cancelled'
+export type PurchaseOrderStatus = 'draft' | 'ordered' | 'partially_delivered' | 'delivered' | 'cancelled'
 
 export type PurchaseOrder = {
   id: string
   company_id: string
   supplier_id: string | null
   order_date: string
-  status: OrderStatus
+  status: PurchaseOrderStatus
   total_amount: number | null
   notes: string | null
   created_at: string
@@ -301,4 +301,36 @@ export type StockMovement = {
   notes: string | null
   created_by: string
   created_at: string
+}
+
+export type OrderStatus = 'quote' | 'commissioned' | 'in_progress' | 'acceptance' | 'completed' | 'complaint'
+
+export type Customer = {
+  id: string; company_id: string; name: string; contact_person: string | null
+  email: string | null; phone: string | null; address: string | null; notes: string | null
+  created_at: string; updated_at: string
+}
+
+export type Order = {
+  id: string; company_id: string; customer_id: string; site_id: string | null
+  title: string; description: string | null; status: OrderStatus
+  start_date: string | null; end_date: string | null; budget: number | null
+  created_at: string; updated_at: string
+}
+
+export type OrderItem = {
+  id: string; order_id: string; position: number; description: string
+  quantity: number; unit: string; unit_price: number; created_at: string
+}
+
+export type OrderAssignment = {
+  id: string; order_id: string; resource_type: 'employee' | 'vehicle' | 'equipment'
+  resource_id: string; start_date: string | null; end_date: string | null
+  notes: string | null; created_at: string
+}
+
+export type OrderCost = {
+  id: string; company_id: string; order_id: string
+  category: 'subcontractor' | 'material' | 'equipment' | 'vehicle' | 'other'
+  description: string; amount: number; date: string; created_at: string
 }
