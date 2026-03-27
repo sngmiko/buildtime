@@ -13,7 +13,7 @@ export default async function RegisterPage({
       <div>
         <h2 className="text-2xl font-bold text-slate-900">Firma registrieren</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Erstellen Sie Ihr BuildTime-Konto
+          Erstellen Sie in 3 Schritten Ihr BuildTime-Konto — kostenlos für 7 Tage.
         </p>
       </div>
 
