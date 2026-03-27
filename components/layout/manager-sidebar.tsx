@@ -73,7 +73,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
         {/* Search hint */}
         <div className="mx-4 mb-4">
           <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-search'))}
             className="flex w-full items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-300"
           >
             <Search className="h-4 w-4" />

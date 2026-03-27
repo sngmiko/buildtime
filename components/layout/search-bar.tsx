@@ -23,8 +23,15 @@ export function SearchBar() {
       }
       if (e.key === 'Escape') setOpen(false)
     }
+    function handleOpenSearch() {
+      setOpen(true)
+    }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('open-search', handleOpenSearch)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('open-search', handleOpenSearch)
+    }
   }, [])
 
   useEffect(() => {
@@ -40,10 +47,11 @@ export function SearchBar() {
       const q = `%${query}%`
       const items: SearchResult[] = []
 
+      // Use separate queries instead of .or() to avoid PostgREST filter escaping issues
       const [{ data: profiles }, { data: orders }, { data: sites }, { data: vehicles }] = await Promise.all([
         supabase.from('profiles').select('id, first_name, last_name, role').or(`first_name.ilike.${q},last_name.ilike.${q}`).limit(5),
-        supabase.from('orders').select('id, title, status').ilike('title', q).limit(5),
-        supabase.from('construction_sites').select('id, name, status').ilike('name', q).limit(5),
+        supabase.from('orders').select('id, title, status').filter('title', 'ilike', q).limit(5),
+        supabase.from('construction_sites').select('id, name, status').filter('name', 'ilike', q).limit(5),
         supabase.from('vehicles').select('id, license_plate, make, model').or(`license_plate.ilike.${q},make.ilike.${q}`).limit(5),
       ])
 
@@ -69,11 +77,11 @@ export function SearchBar() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 sm:flex"
+        className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700"
       >
         <Search className="h-4 w-4" />
-        Suche...
-        <kbd className="ml-4 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400">⌘K</kbd>
+        <span className="hidden sm:inline">Suche...</span>
+        <kbd className="hidden sm:inline ml-4 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400">⌘K</kbd>
       </button>
     )
   }
