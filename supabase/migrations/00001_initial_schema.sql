@@ -72,11 +72,11 @@ CREATE TRIGGER profiles_updated_at
 -- =============================================================================
 -- RLS HELPER FUNCTIONS
 -- =============================================================================
-CREATE OR REPLACE FUNCTION auth.company_id() RETURNS UUID AS $$
+CREATE OR REPLACE FUNCTION public.get_my_company_id() RETURNS UUID AS $$
   SELECT company_id FROM public.profiles WHERE id = auth.uid()
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
-CREATE OR REPLACE FUNCTION auth.user_role() RETURNS user_role AS $$
+CREATE OR REPLACE FUNCTION public.get_my_role() RETURNS user_role AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid()
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
@@ -89,19 +89,19 @@ ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
 
 -- COMPANIES
 CREATE POLICY "select_own_company" ON companies
-  FOR SELECT USING (id = auth.company_id());
+  FOR SELECT USING (id = public.get_my_company_id());
 
 CREATE POLICY "owner_update_company" ON companies
-  FOR UPDATE USING (id = auth.company_id() AND auth.user_role() = 'owner');
+  FOR UPDATE USING (id = public.get_my_company_id() AND public.get_my_role() = 'owner');
 
 -- PROFILES
 CREATE POLICY "select_company_profiles" ON profiles
-  FOR SELECT USING (company_id = auth.company_id());
+  FOR SELECT USING (company_id = public.get_my_company_id());
 
 CREATE POLICY "manage_company_profiles" ON profiles
   FOR ALL USING (
-    company_id = auth.company_id()
-    AND auth.user_role() IN ('owner', 'foreman')
+    company_id = public.get_my_company_id()
+    AND public.get_my_role() IN ('owner', 'foreman')
   );
 
 -- Workers can update their own profile (name, phone)
@@ -111,12 +111,12 @@ CREATE POLICY "update_own_profile" ON profiles
 
 -- INVITATIONS
 CREATE POLICY "select_company_invitations" ON invitations
-  FOR SELECT USING (company_id = auth.company_id());
+  FOR SELECT USING (company_id = public.get_my_company_id());
 
 CREATE POLICY "insert_company_invitations" ON invitations
   FOR INSERT WITH CHECK (
-    company_id = auth.company_id()
-    AND auth.user_role() IN ('owner', 'foreman')
+    company_id = public.get_my_company_id()
+    AND public.get_my_role() IN ('owner', 'foreman')
   );
 
 -- =============================================================================

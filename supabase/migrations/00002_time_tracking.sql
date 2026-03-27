@@ -48,20 +48,20 @@ ALTER TABLE construction_sites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "select_company_sites" ON construction_sites
-  FOR SELECT USING (company_id = auth.company_id());
+  FOR SELECT USING (company_id = public.get_my_company_id());
 
 CREATE POLICY "manage_company_sites" ON construction_sites
   FOR ALL USING (
-    company_id = auth.company_id()
-    AND auth.user_role() IN ('owner', 'foreman')
+    company_id = public.get_my_company_id()
+    AND public.get_my_role() IN ('owner', 'foreman')
   );
 
 CREATE POLICY "select_company_entries" ON time_entries
-  FOR SELECT USING (company_id = auth.company_id());
+  FOR SELECT USING (company_id = public.get_my_company_id());
 
 CREATE POLICY "worker_insert_own" ON time_entries
   FOR INSERT WITH CHECK (
-    company_id = auth.company_id()
+    company_id = public.get_my_company_id()
     AND user_id = auth.uid()
   );
 
