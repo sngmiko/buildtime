@@ -52,6 +52,11 @@ export async function createDiaryEntry(prevState: DiaryState, formData: FormData
   redirect('/bautagebuch')
 }
 
+export async function getWeatherForLocation(lat: number, lng: number) {
+  const { fetchWeather } = await import('@/lib/weather')
+  return fetchWeather(lat, lng)
+}
+
 export async function updateDiaryEntry(entryId: string, prevState: DiaryState, formData: FormData): Promise<DiaryState> {
   const raw: Record<string, unknown> = {}
   for (const key of ['site_id', 'entry_date', 'weather', 'temperature', 'wind', 'work_description', 'incidents', 'defects', 'hindrances']) {
