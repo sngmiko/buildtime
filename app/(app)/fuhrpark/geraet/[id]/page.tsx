@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft } from 'lucide-react'
 import { EquipmentEditForm } from './equipment-edit-form'
+import { AddCostForm } from './add-cost-form'
 import type { Equipment, EquipmentCost } from '@/lib/types'
 
 const CAT_LABELS: Record<string, string> = { heavy: 'Baumaschine', power_tool: 'Elektrowerkzeug', tool: 'Werkzeug', safety: 'Sicherheit', other: 'Sonstiges' }
@@ -66,6 +67,8 @@ export default async function EquipmentDetailPage({
       <Card className="max-w-lg">
         <EquipmentEditForm equipment={e} sites={(sites || []) as { id: string; name: string }[]} />
       </Card>
+
+      <AddCostForm equipmentId={e.id} />
 
       {/* Cost history */}
       {(costs as EquipmentCost[] || []).length > 0 && (
