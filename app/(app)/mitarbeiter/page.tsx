@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TipBanner } from '@/components/ui/tip-banner'
 import { getDismissedTips } from '@/actions/activity'
-import { Plus, Users, AlertTriangle } from 'lucide-react'
+import { Plus, UserPlus, Users, AlertTriangle } from 'lucide-react'
 import type { ProfileExtended, Qualification } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Inhaber',
@@ -60,10 +61,32 @@ export default async function MitarbeiterPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Mitarbeiter</h1>
-        <Link href="/mitarbeiter/einladen">
-          <Button><Plus className="h-4 w-4" /> Einladen</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/mitarbeiter/anlegen">
+            <Button><Plus className="h-4 w-4" /> Anlegen</Button>
+          </Link>
+          <Link href="/mitarbeiter/einladen">
+            <Button variant="outline"><UserPlus className="h-4 w-4" /> Einladen</Button>
+          </Link>
+        </div>
       </div>
+
+      {profiles && profiles.length > 0 && (
+        <Card className="bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] text-white p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-blue-200">Personalkosten (geschätzt/Monat)</p>
+              <p className="text-2xl font-bold">
+                {formatCurrency((profiles as ProfileExtended[]).reduce((sum, p) => sum + (p.monthly_salary || (p.hourly_rate || 0) * 168), 0))}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-blue-200">Mitarbeiter</p>
+              <p className="text-2xl font-bold">{profiles.length}</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {expiringQuals && expiringQuals.length > 0 && (
         <Card className="border-amber-200 bg-amber-50 p-4">
@@ -105,6 +128,7 @@ export default async function MitarbeiterPage() {
                   <th className="pb-3 font-medium text-slate-500">Rolle</th>
                   <th className="pb-3 font-medium text-slate-500">Telefon</th>
                   <th className="pb-3 font-medium text-slate-500">Vertrag</th>
+                  <th className="pb-3 font-medium text-slate-500">Account</th>
                   <th className="pb-3"></th>
                 </tr>
               </thead>
@@ -116,6 +140,13 @@ export default async function MitarbeiterPage() {
                     <td className="py-3 text-slate-600">{p.phone || '–'}</td>
                     <td className="py-3 text-slate-600">
                       {p.contract_type ? { permanent: 'Fest', temporary: 'Befristet', minijob: 'Minijob', intern: 'Praktikum' }[p.contract_type] : '–'}
+                    </td>
+                    <td className="py-3">
+                      {(p as ProfileExtended & { has_account?: boolean }).has_account !== false ? (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Account</span>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">Kein Account</span>
+                      )}
                     </td>
                     <td className="py-3 text-right">
                       <Link href={`/mitarbeiter/${p.id}`}>

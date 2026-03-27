@@ -13,6 +13,7 @@ export type EmployeeState = {
   errors?: Record<string, string[]>
   message?: string
   success?: boolean
+  inviteLink?: string
 } | null
 
 // ============================================================================
@@ -345,6 +346,111 @@ export async function reportSick(prevState: EmployeeState, formData: FormData): 
 
   if (error) return { message: 'Krankmeldung konnte nicht gespeichert werden' }
   return { success: true, message: 'Krankmeldung eingereicht. Gute Besserung!' }
+}
+
+// ============================================================================
+// CREATE EMPLOYEE (without auth account)
+// ============================================================================
+export async function createEmployee(
+  prevState: EmployeeState,
+  formData: FormData
+): Promise<EmployeeState> {
+  const firstName = formData.get('first_name') as string
+  const lastName = formData.get('last_name') as string
+  const role = (formData.get('role') as string) || 'worker'
+  const phone = formData.get('phone') as string || null
+  const isTemporary = formData.get('is_temporary') === 'on'
+
+  if (!firstName || !lastName) {
+    return { message: 'Vor- und Nachname sind Pflichtfelder' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Nicht angemeldet' }
+
+  const { data: myProfile } = await supabase
+    .from('profiles')
+    .select('company_id, role')
+    .eq('id', user.id)
+    .single()
+
+  if (!myProfile || !['owner', 'foreman'].includes(myProfile.role)) {
+    return { message: 'Keine Berechtigung' }
+  }
+
+  // Use admin client to create placeholder auth user
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const admin = createAdminClient()
+
+  // Generate a placeholder email that won't conflict
+  const placeholder = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@buildtime.internal`
+  const guestToken = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
+
+  const { data: authUser, error: authError } = await admin.auth.admin.createUser({
+    email: placeholder,
+    password: crypto.randomUUID(),
+    email_confirm: true,
+    user_metadata: { flow: 'employee_created', first_name: firstName, last_name: lastName, is_placeholder: true },
+  })
+
+  if (authError || !authUser.user) {
+    return { message: 'Mitarbeiter konnte nicht angelegt werden' }
+  }
+
+  // Create profile
+  const { error: profileError } = await admin.from('profiles').insert({
+    id: authUser.user.id,
+    company_id: myProfile.company_id,
+    role,
+    first_name: firstName,
+    last_name: lastName,
+    phone: phone || null,
+    has_account: false,
+    is_temporary: isTemporary,
+    guest_token: guestToken,
+    invited_by: user.id,
+  })
+
+  if (profileError) {
+    await admin.auth.admin.deleteUser(authUser.user.id)
+    return { message: 'Profil konnte nicht erstellt werden' }
+  }
+
+  return { success: true, message: `${firstName} ${lastName} wurde angelegt` }
+}
+
+export async function activateEmployeeAccount(
+  employeeId: string,
+  email: string
+): Promise<EmployeeState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Nicht angemeldet' }
+
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const admin = createAdminClient()
+
+  // Update the auth user's email to the real one
+  const { error } = await admin.auth.admin.updateUserById(employeeId, {
+    email,
+    email_confirm: true,
+  })
+
+  if (error) return { message: 'E-Mail konnte nicht gesetzt werden: ' + error.message }
+
+  // Mark profile as having account
+  await admin.from('profiles').update({ has_account: true }).eq('id', employeeId)
+
+  // Generate password reset link as invite
+  const { data: linkData } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+  })
+
+  const link = linkData?.properties?.action_link || ''
+
+  return { success: true, message: 'Account aktiviert', inviteLink: link }
 }
 
 // ============================================================================

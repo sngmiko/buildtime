@@ -8,7 +8,7 @@ import { TipBanner } from '@/components/ui/tip-banner'
 import { getDismissedTips } from '@/actions/activity'
 import { Plus, Package, AlertTriangle } from 'lucide-react'
 import type { Material, Supplier, PurchaseOrder } from '@/lib/types'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatCurrency } from '@/lib/format'
 
 const UNIT_LABELS: Record<string, string> = {
   piece: 'Stk', m: 'm', m2: 'm²', m3: 'm³', kg: 'kg', l: 'l', pack: 'Pack.',
@@ -62,8 +62,11 @@ export default async function LagerPage({
     getDismissedTips(),
   ])
 
-  const lowStockMaterials = (materials as (Material & { suppliers: { name: string } | null })[] || [])
-    .filter(m => m.current_stock <= m.min_stock)
+  const materialList = materials as (Material & { suppliers: { name: string } | null })[] || []
+  const lowStockMaterials = materialList.filter(m => m.current_stock <= m.min_stock)
+  const totalStockValue = materialList.reduce((sum, m) => sum + (m.current_stock * (m.price_per_unit || 0)), 0)
+  const lowStockCount = lowStockMaterials.length
+  const materialCount = materialList.length
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,6 +95,19 @@ export default async function LagerPage({
           </div>
         </Card>
       )}
+
+      <Card className="bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] text-white p-5">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-sm text-blue-200">Lagerwert (geschätzt)</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalStockValue)}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-blue-200">{lowStockCount > 0 ? `${lowStockCount} unter Mindestbestand` : 'Bestand OK'}</p>
+            <p className="text-2xl font-bold">{materialCount} Materialien</p>
+          </div>
+        </div>
+      </Card>
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">

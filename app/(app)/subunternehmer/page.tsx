@@ -7,7 +7,8 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { TipBanner } from '@/components/ui/tip-banner'
 import { getDismissedTips } from '@/actions/activity'
 import { Plus, UsersRound, Star, AlertTriangle, Phone, Mail } from 'lucide-react'
-import type { Subcontractor } from '@/lib/types'
+import type { Subcontractor, SubcontractorAssignment } from '@/lib/types'
+import { formatCurrency } from '@/lib/format'
 
 function StarRating({ value, label }: { value: number | null; label: string }) {
   if (value === null) return null
@@ -34,10 +35,15 @@ export default async function SubunternehmerPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const [{ data: subs }, dismissedTips] = await Promise.all([
+  const [{ data: subs }, { data: assignments }, dismissedTips] = await Promise.all([
     supabase.from('subcontractors').select('*').order('name'),
+    supabase.from('subcontractor_assignments').select('invoiced_amount, agreed_amount'),
     getDismissedTips(),
   ])
+
+  const totalInvoiced = (assignments as Pick<SubcontractorAssignment, 'invoiced_amount' | 'agreed_amount'>[] || [])
+    .reduce((sum, a) => sum + (a.invoiced_amount || 0), 0)
+  const subCount = (subs || []).length
 
   const now = new Date()
   const in30 = new Date()
@@ -59,6 +65,21 @@ export default async function SubunternehmerPage() {
           </Button>
         </Link>
       </div>
+
+      {subCount > 0 && (
+        <Card className="bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] text-white p-5">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p className="text-sm text-blue-200">Gesamtvolumen fakturiert</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalInvoiced)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-blue-200">Subunternehmer</p>
+              <p className="text-2xl font-bold">{subCount}</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {subs && subs.length > 0 && subs.length <= 2 && (
         <TipBanner tipKey="subs_48b" dismissed={dismissedTips.has('subs_48b')}>

@@ -8,7 +8,7 @@ import { TipBanner } from '@/components/ui/tip-banner'
 import { getDismissedTips } from '@/actions/activity'
 import { Plus, Truck, Wrench, AlertTriangle } from 'lucide-react'
 import type { Vehicle, Equipment } from '@/lib/types'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatCurrency } from '@/lib/format'
 
 const VEHICLE_TYPES: Record<string, string> = { car: 'PKW', van: 'Transporter', truck: 'LKW' }
 const STATUS_COLORS: Record<string, string> = {
@@ -55,6 +55,13 @@ export default async function FuhrparkPage({
   const inspectionWarnings = (vehicles as Vehicle[] || []).filter(v => v.next_inspection && new Date(v.next_inspection) < thirtyDays)
   const maintenanceWarnings = (equipment as Equipment[] || []).filter(e => e.next_maintenance && new Date(e.next_maintenance) < thirtyDays)
 
+  // Cost summary
+  const vehicleList = vehicles as Vehicle[] || []
+  const equipmentList = equipment as Equipment[] || []
+  const totalMonthlyCost = vehicleList.reduce((sum, v) => sum + (v.monthly_rate || 0) + (v.insurance_cost || 0) + (v.tax_cost || 0), 0)
+  const vehicleCount = vehicleList.length
+  const equipmentCount = equipmentList.length
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -85,6 +92,19 @@ export default async function FuhrparkPage({
           </div>
         </Card>
       )}
+
+      <Card className="bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] text-white p-5">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-sm text-blue-200">Monatliche Fixkosten Fuhrpark</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalMonthlyCost)}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-blue-200">Fahrzeuge / Geräte</p>
+            <p className="text-2xl font-bold">{vehicleCount} / {equipmentCount}</p>
+          </div>
+        </div>
+      </Card>
 
       {/* Tab toggle */}
       <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
