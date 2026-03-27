@@ -1,38 +1,34 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
-import { Clock } from 'lucide-react'
+import { Printer } from 'lucide-react'
+import { PeriodNav, getDateRange } from '@/components/time/period-nav'
+import { TimeEntryRow, calcNetMinutes, formatHours } from '@/components/time/time-entry-row'
+import { getSurcharges } from '@/lib/surcharges'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import type { TimeEntry } from '@/lib/types'
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-}
+export default async function ZeitenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string; offset?: string }>
+}) {
+  const params = await searchParams
+  const period = params.period || 'week'
+  const offset = parseInt(params.offset || '0', 10)
+  const { start, end } = getDateRange(period, offset)
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
-}
-
-function calcNetMinutes(entry: TimeEntry): number {
-  if (!entry.clock_out) return 0
-  const diffMs = new Date(entry.clock_out).getTime() - new Date(entry.clock_in).getTime()
-  return Math.max(0, diffMs / 60000 - entry.break_minutes)
-}
-
-export default async function ZeitenPage() {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const weekAgo = new Date()
-  weekAgo.setDate(weekAgo.getDate() - 7)
-  weekAgo.setHours(0, 0, 0, 0)
 
   const { data: entries } = await supabase
     .from('time_entries')
     .select('*')
     .eq('user_id', user.id)
-    .gte('clock_in', weekAgo.toISOString())
+    .gte('clock_in', start.toISOString())
+    .lte('clock_in', end.toISOString())
     .order('clock_in', { ascending: false })
 
   const { data: sites } = await supabase
@@ -42,6 +38,7 @@ export default async function ZeitenPage() {
   const siteMap = new Map((sites || []).map((s: { id: string; name: string }) => [s.id, s.name]))
   const typedEntries = (entries as TimeEntry[]) || []
 
+  // Group by date
   const grouped = typedEntries.reduce<Record<string, TimeEntry[]>>((acc, entry) => {
     const dateKey = new Date(entry.clock_in).toLocaleDateString('de-DE')
     if (!acc[dateKey]) acc[dateKey] = []
@@ -49,63 +46,89 @@ export default async function ZeitenPage() {
     return acc
   }, {})
 
+  // Summary stats
   const totalMinutes = typedEntries.reduce((sum, e) => sum + calcNetMinutes(e), 0)
-  const totalHours = Math.floor(totalMinutes / 60)
-  const totalMins = Math.round(totalMinutes % 60)
+  let nightMinutes = 0
+  let weekendMinutes = 0
+  let holidayMinutes = 0
+  for (const e of typedEntries) {
+    if (!e.clock_out) continue
+    const s = getSurcharges(e.clock_in, e.clock_out)
+    const net = calcNetMinutes(e)
+    if (s.isNight) nightMinutes += net
+    if (s.isWeekend) weekendMinutes += net
+    if (s.isHoliday) holidayMinutes += net
+  }
+
+  const periodLabel = period === 'month' ? 'Monat' : 'Woche'
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Meine Zeiten</h1>
-        <div className="flex items-center gap-2 rounded-lg bg-[#1e3a5f] px-3 py-1.5 text-sm font-medium text-white">
-          <Clock className="h-4 w-4" />
-          {totalHours}:{totalMins.toString().padStart(2, '0')} Std. (7 Tage)
+        <div className="flex gap-2">
+          <Link href={`/zeiten/druck?period=${period}&offset=${offset}`}>
+            <Button variant="outline" size="sm">
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline">Drucken</span>
+            </Button>
+          </Link>
         </div>
       </div>
 
+      <PeriodNav />
+
+      {/* Summary */}
+      <div className="grid gap-3 sm:grid-cols-4">
+        <Card className="p-4 text-center">
+          <p className="text-2xl font-bold text-slate-900">{formatHours(totalMinutes)}</p>
+          <p className="text-xs text-slate-500">Gesamt ({periodLabel})</p>
+        </Card>
+        {nightMinutes > 0 && (
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-indigo-600">{formatHours(nightMinutes)}</p>
+            <p className="text-xs text-slate-500">Nachtarbeit</p>
+          </Card>
+        )}
+        {weekendMinutes > 0 && (
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-amber-600">{formatHours(weekendMinutes)}</p>
+            <p className="text-xs text-slate-500">Wochenende</p>
+          </Card>
+        )}
+        {holidayMinutes > 0 && (
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-rose-600">{formatHours(holidayMinutes)}</p>
+            <p className="text-xs text-slate-500">Feiertag</p>
+          </Card>
+        )}
+      </div>
+
+      {/* Entries by day */}
       {Object.keys(grouped).length === 0 ? (
         <Card className="py-8 text-center text-sm text-slate-500">
-          Keine Einträge in den letzten 7 Tagen
+          Keine Einträge in diesem Zeitraum
         </Card>
       ) : (
         Object.entries(grouped).map(([date, dayEntries]) => {
           const dayTotal = dayEntries.reduce((sum, e) => sum + calcNetMinutes(e), 0)
-          const dayH = Math.floor(dayTotal / 60)
-          const dayM = Math.round(dayTotal % 60)
           return (
             <div key={date}>
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700">
-                  {formatDate(dayEntries[0].clock_in)}
+                  {new Date(dayEntries[0].clock_in).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </h2>
-                <span className="text-sm text-slate-500">
-                  {dayH}:{dayM.toString().padStart(2, '0')} Std.
-                </span>
+                <span className="text-sm text-slate-500">{formatHours(dayTotal)} Std.</span>
               </div>
               <Card className="p-0">
                 <div className="divide-y divide-slate-100">
-                  {dayEntries.map((entry) => {
-                    const net = calcNetMinutes(entry)
-                    const h = Math.floor(net / 60)
-                    const m = Math.round(net % 60)
-                    return (
-                      <div key={entry.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                        <div>
-                          <p className="font-medium text-slate-900">
-                            {siteMap.get(entry.site_id) || 'Unbekannt'}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {formatTime(entry.clock_in)}
-                            {entry.clock_out ? ` – ${formatTime(entry.clock_out)}` : ' – läuft'}
-                            {entry.break_minutes > 0 && ` · ${entry.break_minutes}min Pause`}
-                          </p>
-                        </div>
-                        <span className="font-medium text-slate-700">
-                          {entry.clock_out ? `${h}:${m.toString().padStart(2, '0')}` : '–'}
-                        </span>
-                      </div>
-                    )
-                  })}
+                  {dayEntries.map((entry) => (
+                    <TimeEntryRow
+                      key={entry.id}
+                      entry={entry}
+                      siteName={siteMap.get(entry.site_id) || 'Unbekannt'}
+                    />
+                  ))}
                 </div>
               </Card>
             </div>
