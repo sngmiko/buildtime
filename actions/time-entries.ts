@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { clockInSchema, clockOutSchema } from '@/lib/validations/time-entries'
+import { clockInSchema, clockOutSchema, editEntrySchema } from '@/lib/validations/time-entries'
 
 export type TimeEntryState = {
   errors?: Record<string, string[]>
@@ -98,6 +98,87 @@ export async function clockOut(prevState: TimeEntryState, formData: FormData): P
 
   if (error || count === 0) {
     return { message: 'Ausstempeln fehlgeschlagen' }
+  }
+
+  return { success: true }
+}
+
+export async function updateEntry(
+  entryId: string,
+  prevState: TimeEntryState,
+  formData: FormData
+): Promise<TimeEntryState> {
+  const raw = {
+    clock_in: formData.get('clock_in'),
+    clock_out: formData.get('clock_out'),
+    break_minutes: formData.get('break_minutes') || '0',
+    site_id: formData.get('site_id'),
+    notes: formData.get('notes') || '',
+  }
+
+  const validated = editEntrySchema.safeParse(raw)
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors }
+  }
+
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Nicht angemeldet' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+    return { message: 'Keine Berechtigung' }
+  }
+
+  const { error } = await supabase
+    .from('time_entries')
+    .update({
+      clock_in: validated.data.clock_in,
+      clock_out: validated.data.clock_out,
+      break_minutes: validated.data.break_minutes,
+      site_id: validated.data.site_id,
+      notes: validated.data.notes || null,
+      edited_by: user.id,
+      edited_at: new Date().toISOString(),
+    })
+    .eq('id', entryId)
+
+  if (error) {
+    return { message: 'Eintrag konnte nicht aktualisiert werden' }
+  }
+
+  return { success: true, message: 'Eintrag aktualisiert' }
+}
+
+export async function deleteEntry(entryId: string): Promise<TimeEntryState> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { message: 'Nicht angemeldet' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+    return { message: 'Keine Berechtigung' }
+  }
+
+  const { error } = await supabase
+    .from('time_entries')
+    .delete()
+    .eq('id', entryId)
+
+  if (error) {
+    return { message: 'Eintrag konnte nicht gelöscht werden' }
   }
 
   return { success: true }
