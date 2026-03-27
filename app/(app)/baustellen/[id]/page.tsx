@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, MapPin, Calendar, Euro, Users, Clock, HardHat, BookOpen, Package } from 'lucide-react'
+import { formatCurrency, formatNumber } from '@/lib/format'
 import { EditSiteForm } from './edit-site-form'
 import type { ConstructionSite, TimeEntry } from '@/lib/types'
 
@@ -113,7 +114,7 @@ export default async function SiteDetailPage({
         </Card>
         <Card className="p-4 text-center">
           <Euro className="mx-auto mb-1 h-5 w-5 text-emerald-600" />
-          <p className="text-xl font-bold text-slate-900">{laborCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xl font-bold text-slate-900">{formatCurrency(laborCost)}</p>
           <p className="text-xs text-slate-500">Personalkosten</p>
         </Card>
         <Card className="p-4 text-center">
@@ -173,7 +174,7 @@ export default async function SiteDetailPage({
                 <div className="mt-3 border-t border-slate-200 pt-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Budget</span>
-                    <span className="font-bold text-slate-900">{Number(s.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                    <span className="font-bold text-slate-900">{formatCurrency(Number(s.budget))}</span>
                   </div>
                   {Number(s.budget) > 0 && (
                     <div className="mt-2">
@@ -261,7 +262,7 @@ export default async function SiteDetailPage({
                         {e.break_minutes > 0 && ` · ${e.break_minutes}min Pause`}
                       </p>
                     </div>
-                    <span className="font-medium text-slate-700">{e.clock_out ? `${hours.toFixed(1)}h` : '–'}</span>
+                    <span className="font-medium text-slate-700">{e.clock_out ? `${formatNumber(hours, 1)}h` : '–'}</span>
                   </div>
                 )
               })}

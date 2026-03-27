@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, Printer } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
 import { InvoiceActions } from './invoice-actions'
 import type { Invoice, InvoiceItem, Customer, PaymentReminder } from '@/lib/types'
 
@@ -77,31 +78,31 @@ export default async function RechnungDetailPage({
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Netto</p>
           <p className="text-xl font-bold text-slate-900">
-            {invoice.subtotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            {formatCurrency(invoice.subtotal)}
           </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">MwSt. ({invoice.tax_rate}%)</p>
           <p className="text-xl font-bold text-slate-700">
-            {invoice.tax_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            {formatCurrency(invoice.tax_amount)}
           </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Brutto</p>
           <p className="text-xl font-bold text-[#1e3a5f]">
-            {invoice.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            {formatCurrency(invoice.total)}
           </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Bezahlt</p>
           <p className="text-xl font-bold text-emerald-600">
-            {invoice.paid_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            {formatCurrency(invoice.paid_amount)}
           </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Offen</p>
           <p className={`text-xl font-bold ${open > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-            {open.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            {formatCurrency(open)}
           </p>
         </Card>
       </div>
@@ -135,10 +136,10 @@ export default async function RechnungDetailPage({
                   <td className="py-2.5 pr-4 text-slate-900">{item.description}</td>
                   <td className="py-2.5 pr-4 text-right text-slate-700">{item.quantity} {item.unit}</td>
                   <td className="py-2.5 pr-4 text-right text-slate-700">
-                    {item.unit_price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    {formatCurrency(item.unit_price)}
                   </td>
                   <td className="py-2.5 text-right font-medium text-slate-900">
-                    {item.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    {formatCurrency(item.total)}
                   </td>
                 </tr>
               ))}
@@ -152,19 +153,19 @@ export default async function RechnungDetailPage({
               <tr>
                 <td colSpan={4} className="pt-3 pr-4 text-right text-sm text-slate-500">Netto</td>
                 <td className="pt-3 text-right text-sm font-medium text-slate-900">
-                  {invoice.subtotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  {formatCurrency(invoice.subtotal)}
                 </td>
               </tr>
               <tr>
                 <td colSpan={4} className="py-1 pr-4 text-right text-sm text-slate-500">MwSt. {invoice.tax_rate}%</td>
                 <td className="py-1 text-right text-sm font-medium text-slate-900">
-                  {invoice.tax_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  {formatCurrency(invoice.tax_amount)}
                 </td>
               </tr>
               <tr className="border-t border-slate-200">
                 <td colSpan={4} className="pt-3 pr-4 text-right text-base font-semibold text-slate-900">Gesamt</td>
                 <td className="pt-3 text-right text-base font-bold text-[#1e3a5f]">
-                  {invoice.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  {formatCurrency(invoice.total)}
                 </td>
               </tr>
             </tfoot>
@@ -183,11 +184,11 @@ export default async function RechnungDetailPage({
                   <p className="text-sm font-medium text-red-800">{r.reminder_level}. Mahnung</p>
                   <p className="text-xs text-red-600">
                     Gesendet: {new Date(r.sent_date).toLocaleDateString('de-DE')}
-                    {r.fee > 0 && ` · Mahngebühr: ${r.fee.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}`}
+                    {r.fee > 0 && ` · Mahngebühr: ${formatCurrency(r.fee)}`}
                   </p>
                 </div>
                 <p className="text-sm font-bold text-red-700">
-                  {r.due_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  {formatCurrency(r.due_amount)}
                 </p>
               </div>
             ))}

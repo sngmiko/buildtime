@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { ChevronLeft, Fuel, Route, Wrench, CreditCard } from 'lucide-react'
 import { VehicleEditForm } from './vehicle-edit-form'
 import { AddFuelLogForm, AddTripLogForm } from './fuel-trip-forms'
+import { formatCurrency, formatNumber } from '@/lib/format'
 import type { Vehicle, FuelLog, TripLog } from '@/lib/types'
 
 export default async function VehicleDetailPage({
@@ -71,15 +72,15 @@ export default async function VehicleDetailPage({
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">{v.mileage?.toLocaleString('de-DE') || 0}</p>
+          <p className="text-2xl font-bold text-slate-900">{v.mileage != null ? formatNumber(v.mileage) : 0}</p>
           <p className="text-xs text-slate-500">Kilometer</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">{totalFuelCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalFuelCost)}</p>
           <p className="text-xs text-slate-500">Tankkosten</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-slate-900">{totalKm.toLocaleString('de-DE')} km</p>
+          <p className="text-2xl font-bold text-slate-900">{formatNumber(totalKm)} km</p>
           <p className="text-xs text-slate-500">Gefahrene KM</p>
         </Card>
         <Card className="p-4 text-center">
@@ -125,9 +126,9 @@ export default async function VehicleDetailPage({
             <Card className="p-4 text-center">
               <p className="text-lg font-bold text-slate-900">
                 {v.purchase_price != null
-                  ? v.purchase_price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
+                  ? formatCurrency(v.purchase_price)
                   : v.monthly_rate != null
-                  ? `${v.monthly_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} / Mo.`
+                  ? `${formatCurrency(v.monthly_rate)} / Mo.`
                   : '–'}
               </p>
               <p className="text-xs text-slate-500">{v.purchase_price != null ? 'Kaufpreis' : 'Monatliche Rate'}</p>
@@ -147,31 +148,31 @@ export default async function VehicleDetailPage({
           <div className="grid gap-4 sm:grid-cols-4">
             {v.down_payment != null && (
               <Card className="p-4 text-center">
-                <p className="text-lg font-bold text-slate-900">{v.down_payment.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-lg font-bold text-slate-900">{formatCurrency(v.down_payment)}</p>
                 <p className="text-xs text-slate-500">Anzahlung</p>
               </Card>
             )}
             {v.residual_value != null && (
               <Card className="p-4 text-center">
-                <p className="text-lg font-bold text-slate-900">{v.residual_value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-lg font-bold text-slate-900">{formatCurrency(v.residual_value)}</p>
                 <p className="text-xs text-slate-500">Restwert</p>
               </Card>
             )}
             {v.interest_rate != null && (
               <Card className="p-4 text-center">
-                <p className="text-lg font-bold text-slate-900">{v.interest_rate.toFixed(2)} %</p>
+                <p className="text-lg font-bold text-slate-900">{formatNumber(v.interest_rate, 2)} %</p>
                 <p className="text-xs text-slate-500">Zinssatz</p>
               </Card>
             )}
             {v.loan_amount != null && (
               <Card className="p-4 text-center">
-                <p className="text-lg font-bold text-slate-900">{v.loan_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                <p className="text-lg font-bold text-slate-900">{formatCurrency(v.loan_amount)}</p>
                 <p className="text-xs text-slate-500">Kreditbetrag</p>
               </Card>
             )}
             {v.rental_daily_rate != null && (
               <Card className="p-4 text-center">
-                <p className="text-lg font-bold text-slate-900">{v.rental_daily_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} / Tag</p>
+                <p className="text-lg font-bold text-slate-900">{formatCurrency(v.rental_daily_rate)} / Tag</p>
                 <p className="text-xs text-slate-500">Tagesmiete</p>
               </Card>
             )}
@@ -181,17 +182,17 @@ export default async function VehicleDetailPage({
             <Card className="p-4">
               <h3 className="mb-3 font-semibold text-slate-900">Monatliche Fixkosten</h3>
               <div className="flex flex-col gap-1 text-sm">
-                {v.monthly_rate != null && <div className="flex justify-between"><span className="text-slate-600">Rate / Leasing</span><span className="font-medium">{v.monthly_rate.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
-                {v.insurance_cost != null && <div className="flex justify-between"><span className="text-slate-600">Versicherung</span><span className="font-medium">{v.insurance_cost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
-                {v.tax_cost != null && <div className="flex justify-between"><span className="text-slate-600">KFZ-Steuer</span><span className="font-medium">{v.tax_cost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></div>}
+                {v.monthly_rate != null && <div className="flex justify-between"><span className="text-slate-600">Rate / Leasing</span><span className="font-medium">{formatCurrency(v.monthly_rate)}</span></div>}
+                {v.insurance_cost != null && <div className="flex justify-between"><span className="text-slate-600">Versicherung</span><span className="font-medium">{formatCurrency(v.insurance_cost)}</span></div>}
+                {v.tax_cost != null && <div className="flex justify-between"><span className="text-slate-600">KFZ-Steuer</span><span className="font-medium">{formatCurrency(v.tax_cost)}</span></div>}
                 <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 font-semibold">
                   <span>Gesamt / Monat</span>
-                  <span style={{ color: '#1e3a5f' }}>{monthlyFixed.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                  <span style={{ color: '#1e3a5f' }}>{formatCurrency(monthlyFixed)}</span>
                 </div>
                 {totalFinancingCost != null && (
                   <div className="flex justify-between text-slate-600">
                     <span>Gesamtkosten ({contractMonths} Monate inkl. Kraftstoff)</span>
-                    <span className="font-semibold" style={{ color: '#f59e0b' }}>{totalFinancingCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                    <span className="font-semibold" style={{ color: '#f59e0b' }}>{formatCurrency(totalFinancingCost)}</span>
                   </div>
                 )}
               </div>
@@ -212,9 +213,9 @@ export default async function VehicleDetailPage({
                   <div key={f.id} className="flex items-center justify-between px-4 py-3 text-sm">
                     <div>
                       <p className="font-medium text-slate-900">{new Date(f.date).toLocaleDateString('de-DE')}</p>
-                      <p className="text-xs text-slate-500">{Number(f.liters).toFixed(1)} Liter · {f.mileage ? `${f.mileage.toLocaleString('de-DE')} km` : ''}</p>
+                      <p className="text-xs text-slate-500">{formatNumber(Number(f.liters), 1)} Liter · {f.mileage ? `${formatNumber(f.mileage)} km` : ''}</p>
                     </div>
-                    <span className="font-medium text-slate-900">{Number(f.cost).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                    <span className="font-medium text-slate-900">{formatCurrency(Number(f.cost))}</span>
                   </div>
                 ))}
               </div>

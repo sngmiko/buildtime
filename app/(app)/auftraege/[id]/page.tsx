@@ -5,6 +5,7 @@ import { getOrderFullDetails } from '@/lib/queries/order-details'
 import { calculateFullOrderCosts } from '@/lib/queries/cost-integration'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
 import { OrderDetailTabs } from './order-tabs'
 import { CreateInvoiceButton } from './create-invoice-button'
 
@@ -76,19 +77,19 @@ export default async function OrderDetailPage({
       <div className="grid gap-4 sm:grid-cols-5">
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Auftragswert</p>
-          <p className="text-xl font-bold text-slate-900">{f.revenue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xl font-bold text-slate-900">{formatCurrency(f.revenue)}</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Personalkosten</p>
-          <p className="text-xl font-bold text-blue-600">{f.labor.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xl font-bold text-blue-600">{formatCurrency(f.labor.total)}</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Gesamtkosten</p>
-          <p className="text-xl font-bold text-slate-700">{f.grandTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xl font-bold text-slate-700">{formatCurrency(f.grandTotal)}</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Gewinn</p>
-          <p className={`text-xl font-bold ${f.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{f.profit.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className={`text-xl font-bold ${f.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(f.profit)}</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Marge</p>

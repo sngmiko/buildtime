@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, AlertTriangle, TrendingUp, TrendingDown, RotateCcw } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
 import { MaterialEditForm } from './material-edit-form'
 import { StockMovementForm } from './stock-movement-form'
 import type { Material, Supplier, StockMovement } from '@/lib/types'
@@ -96,7 +97,7 @@ export default async function MaterialDetailPage({
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-slate-900">
             {m.price_per_unit != null
-              ? `${m.price_per_unit.toFixed(2)} €`
+              ? formatCurrency(m.price_per_unit)
               : '–'}
           </p>
           <p className="text-xs text-slate-500">Preis / {UNIT_LABELS[m.unit]}</p>

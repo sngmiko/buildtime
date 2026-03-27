@@ -6,6 +6,7 @@ import {
   Briefcase, TrendingUp, TrendingDown, Euro, Users, AlertTriangle,
   Clock, Star, CloudSun, Check
 } from 'lucide-react'
+import { formatCurrency, formatNumber } from '@/lib/format'
 import type { OnboardingProgress } from '@/lib/types'
 
 export default async function DashboardPage() {
@@ -161,14 +162,14 @@ export default async function DashboardPage() {
     },
     {
       label: 'Offene Angebote',
-      value: openQuotesValue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+      value: formatCurrency(openQuotesValue),
       icon: TrendingUp,
       color: 'text-[#d97706]',
       bg: 'bg-amber-50',
     },
     {
       label: 'Umsatz diesen Monat',
-      value: monthRevenue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+      value: formatCurrency(monthRevenue),
       icon: Euro,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
     {
       label: 'Personalkosten (heute est.)',
       value: estimatedLaborCost > 0
-        ? estimatedLaborCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+        ? formatCurrency(estimatedLaborCost)
         : '—',
       icon: Users,
       color: 'text-violet-600',
@@ -272,9 +273,9 @@ export default async function DashboardPage() {
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-emerald-700">{order.margin!.toFixed(1)}%</p>
+                    <p className="text-sm font-bold text-emerald-700">{formatNumber(order.margin!, 1)}%</p>
                     <p className="text-xs text-slate-500">
-                      {order.revenue.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                      {formatCurrency(order.revenue)}
                     </p>
                   </div>
                 </div>
@@ -299,10 +300,10 @@ export default async function DashboardPage() {
                   </div>
                   <div className="shrink-0 text-right">
                     <p className={`text-sm font-bold ${(order.margin ?? 0) < 0 ? 'text-red-600' : 'text-amber-700'}`}>
-                      {order.margin!.toFixed(1)}%
+                      {formatNumber(order.margin!, 1)}%
                     </p>
                     <p className="text-xs text-slate-500">
-                      {order.costs.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })} Kosten
+                      {formatCurrency(order.costs)} Kosten
                     </p>
                   </div>
                 </div>
