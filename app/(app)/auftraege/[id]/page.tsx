@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getOrderFullDetails } from '@/lib/queries/order-details'
+import { calculateFullOrderCosts } from '@/lib/queries/cost-integration'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
 import { OrderDetailTabs } from './order-tabs'
@@ -33,11 +34,14 @@ export default async function OrderDetailPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/dashboard')
 
-  const details = await getOrderFullDetails(supabase, id)
+  const [details, costBreakdown] = await Promise.all([
+    getOrderFullDetails(supabase, id),
+    calculateFullOrderCosts(supabase, id),
+  ])
   if (!details.order) notFound()
 
   const status = STATUS_LABELS[details.order.status as string] || STATUS_LABELS.quote
-  const f = details.financials
+  const f = costBreakdown
   const marginColor = f.margin >= 15 ? 'text-emerald-600' : f.margin >= 5 ? 'text-amber-600' : 'text-red-600'
   const MarginIcon = f.margin >= 0 ? TrendingUp : TrendingDown
 
@@ -76,11 +80,11 @@ export default async function OrderDetailPage({
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Personalkosten</p>
-          <p className="text-xl font-bold text-blue-600">{f.laborCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xl font-bold text-blue-600">{f.labor.total.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-xs text-slate-500">Sonstige Kosten</p>
-          <p className="text-xl font-bold text-slate-700">{(f.externalCosts + f.subCosts).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+          <p className="text-xs text-slate-500">Gesamtkosten</p>
+          <p className="text-xl font-bold text-slate-700">{f.grandTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-xs text-slate-500">Gewinn</p>
@@ -96,17 +100,18 @@ export default async function OrderDetailPage({
       </div>
 
       {/* Budget warning */}
-      {details.order.budget && f.totalCosts / Number(details.order.budget) >= 0.8 && (
+      {details.order.budget && f.grandTotal / Number(details.order.budget) >= 0.8 && (
         <Card className="border-amber-200 bg-amber-50 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-700">
             <AlertTriangle className="h-4 w-4" />
-            Budget-Warnung: {Math.round((f.totalCosts / Number(details.order.budget)) * 100)}% des Budgets erreicht
+            Budget-Warnung: {Math.round((f.grandTotal / Number(details.order.budget)) * 100)}% des Budgets erreicht
           </div>
         </Card>
       )}
 
       <OrderDetailTabs
         details={details}
+        costBreakdown={costBreakdown}
         activeTab={tab || 'overview'}
         sites={(sites || []) as { id: string; name: string }[]}
         workers={(workers || []) as { id: string; first_name: string; last_name: string; role: string; hourly_rate: number | null }[]}

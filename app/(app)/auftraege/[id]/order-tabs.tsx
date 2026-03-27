@@ -1,13 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useActionState } from 'react'
 import { addOrderItem, addOrderCost, type OrdersState } from '@/actions/orders'
 import { createMeasurement, type MeasurementState } from '@/actions/measurements'
-import { FileText, Calculator, BookOpen, Users, BarChart3, Ruler } from 'lucide-react'
+import { FileText, Calculator, BookOpen, Users, BarChart3, Ruler, ChevronDown, ChevronRight } from 'lucide-react'
+import type { OrderCostBreakdown } from '@/lib/queries/cost-integration'
 
 const TABS = [
   { id: 'overview', label: 'Übersicht', icon: FileText },
@@ -29,15 +31,18 @@ type OrderDetails = {
   subAssignments: Record<string, unknown>[]
   measurements: Record<string, unknown>[]
   financials: { revenue: number; laborCost: number; externalCosts: number; subCosts: number; totalCosts: number; profit: number; margin: number }
+  costBreakdown?: OrderCostBreakdown
 }
 
 export function OrderDetailTabs({
   details,
+  costBreakdown,
   activeTab,
   sites,
   workers,
 }: {
   details: OrderDetails
+  costBreakdown: OrderCostBreakdown
   activeTab: string
   sites: { id: string; name: string }[]
   workers: { id: string; first_name: string; last_name: string; role: string; hourly_rate: number | null }[]
@@ -61,9 +66,9 @@ export function OrderDetailTabs({
 
       {activeTab === 'overview' && <OverviewTab details={details} />}
       {activeTab === 'items' && <ItemsTab details={details} />}
-      {activeTab === 'costs' && <CostsTab details={details} workers={workers} />}
+      {activeTab === 'costs' && <CostsTab details={details} costBreakdown={costBreakdown} workers={workers} />}
       {activeTab === 'aufmass' && <AufmassTab details={details} />}
-      {activeTab === 'nachkalkulation' && <NachkalkulationTab details={details} />}
+      {activeTab === 'nachkalkulation' && <NachkalkulationTab details={details} costBreakdown={costBreakdown} />}
       {activeTab === 'diary' && <DiaryTab details={details} />}
       {activeTab === 'team' && <TeamTab details={details} workers={workers} />}
     </div>
@@ -160,23 +165,49 @@ function ItemsTab({ details }: { details: OrderDetails }) {
   )
 }
 
-function CostsTab({ details, workers }: { details: OrderDetails; workers: { id: string; first_name: string; last_name: string; hourly_rate: number | null }[] }) {
-  const f = details.financials
-  const budgetPct = details.order.budget ? (f.totalCosts / Number(details.order.budget)) * 100 : 0
-  const barColor = budgetPct >= 95 ? 'bg-red-500' : budgetPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+function CollapsibleSection({
+  title,
+  total,
+  count,
+  children,
+  colorClass = 'text-slate-900',
+}: {
+  title: string
+  total: number
+  count: number
+  children: React.ReactNode
+  colorClass?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
 
-  // Group labor by employee
-  const laborByEmployee = new Map<string, { name: string; hours: number; cost: number }>()
-  for (const e of details.timeEntries) {
-    const p = e.profiles as { first_name: string; last_name: string; hourly_rate: number | null } | null
-    if (!p || !e.clock_out) continue
-    const hours = Math.max(0, (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3600000 - (e.break_minutes as number) / 60)
-    const name = `${p.first_name} ${p.last_name}`
-    const existing = laborByEmployee.get(e.user_id as string) || { name, hours: 0, cost: 0 }
-    existing.hours += hours
-    existing.cost += hours * (p.hourly_rate || 0)
-    laborByEmployee.set(e.user_id as string, existing)
-  }
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-sm"
+      >
+        <div className="flex items-center gap-2">
+          {open ? <ChevronDown className="h-4 w-4 text-slate-400" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+          <span className="font-medium text-slate-900">{title}</span>
+          <span className="text-xs text-slate-400">({count} Einträge)</span>
+        </div>
+        <span className={`font-semibold ${colorClass}`}>{fmt(total)}</span>
+      </button>
+      {open && (
+        <div className="divide-y divide-slate-100 bg-white">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; costBreakdown: OrderCostBreakdown; workers: { id: string; first_name: string; last_name: string; hourly_rate: number | null }[] }) {
+  const f = costBreakdown
+  const budgetPct = details.order.budget ? (f.grandTotal / Number(details.order.budget)) * 100 : 0
+  const barColor = budgetPct >= 95 ? 'bg-red-500' : budgetPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+  const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
 
   const orderId = details.order.id as string
   const boundAddCost = addOrderCost.bind(null, orderId)
@@ -195,68 +226,169 @@ function CostsTab({ details, workers }: { details: OrderDetails; workers: { id: 
             <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${Math.min(100, budgetPct)}%` }} />
           </div>
           <div className="mt-2 flex justify-between text-xs text-slate-400">
-            <span>{f.totalCosts.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} von {Number(details.order.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+            <span>{fmt(f.grandTotal)} von {Number(details.order.budget).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
           </div>
         </Card>
       )}
 
-      {/* Cost breakdown */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <h3 className="mb-3 text-lg font-semibold text-slate-900">Personalkosten</h3>
-          {laborByEmployee.size === 0 ? (
-            <p className="text-sm text-slate-500">Keine Zeiteinträge</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {[...laborByEmployee.values()].map((emp, i) => (
-                <div key={i} className="flex items-center justify-between py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-900">{emp.name}</p>
-                    <p className="text-xs text-slate-500">{emp.hours.toFixed(1)}h</p>
-                  </div>
-                  <span className="font-medium">{emp.cost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
-                </div>
-              ))}
-              <div className="flex items-center justify-between py-2 text-sm font-bold">
-                <span>Gesamt Personal</span>
-                <span className="text-blue-600">{f.laborCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        <Card>
-          <h3 className="mb-3 text-lg font-semibold text-slate-900">Sonstige Kosten</h3>
-          {details.costs.length === 0 && details.subAssignments.length === 0 ? (
-            <p className="text-sm text-slate-500">Keine sonstigen Kosten</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {details.costs.map((c) => (
-                <div key={c.id as string} className="flex items-center justify-between py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-900">{c.description as string}</p>
-                    <p className="text-xs text-slate-500">{{ subcontractor: 'Sub', material: 'Material', equipment: 'Gerät', vehicle: 'Fahrzeug', other: 'Sonstiges' }[c.category as string]}</p>
-                  </div>
-                  <span className="font-medium">{Number(c.amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
-                </div>
-              ))}
-              {details.subAssignments.map((s) => (
-                <div key={s.id as string} className="flex items-center justify-between py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-900">{(s.subcontractors as { name: string })?.name}</p>
-                    <p className="text-xs text-slate-500">Subunternehmer</p>
-                  </div>
-                  <span className="font-medium">{Number(s.invoiced_amount || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Add cost */}
+      {/* Automatische Kosten aus Modulen */}
       <Card>
-        <h3 className="mb-4 text-lg font-semibold">Kosten hinzufügen</h3>
+        <h3 className="mb-4 text-lg font-semibold text-slate-900">Automatische Kosten</h3>
+        <p className="text-xs text-slate-400 mb-4">Automatisch aus anderen Modulen berechnet – schreibgeschützt</p>
+        <div className="flex flex-col gap-2">
+          {/* Labor */}
+          <CollapsibleSection
+            title="Mitarbeiter (Zeiterfassung)"
+            total={f.labor.total}
+            count={f.labor.entries.length}
+            colorClass="text-blue-600"
+          >
+            {f.labor.entries.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Zeiteinträge</p>
+            ) : (
+              f.labor.entries.map((e, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{e.name}</p>
+                    <p className="text-xs text-slate-400">{e.hours}h à {fmt(e.rate)}/h</p>
+                  </div>
+                  <span className="font-medium text-slate-700">{fmt(e.cost)}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
+              <span>{f.labor.entries.reduce((s, e) => s + e.hours, 0).toFixed(1)} Mitarbeiterstunden à Ø {f.labor.entries.length > 0 ? fmt(f.labor.entries.reduce((s, e) => s + e.rate, 0) / f.labor.entries.length) : '–'}/h</span>
+              <span className="text-blue-600">{fmt(f.labor.total)}</span>
+            </div>
+          </CollapsibleSection>
+
+          {/* Equipment */}
+          <CollapsibleSection
+            title="Geräte (Gerätepark)"
+            total={f.equipment.total}
+            count={f.equipment.entries.length}
+            colorClass="text-violet-600"
+          >
+            {f.equipment.entries.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Geräte zugewiesen</p>
+            ) : (
+              f.equipment.entries.map((e, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{e.name}</p>
+                    <p className="text-xs text-slate-400">{e.days} Tage à {fmt(e.dailyRate)}/Tag</p>
+                  </div>
+                  <span className="font-medium text-slate-700">{fmt(e.cost)}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
+              <span>{f.equipment.entries.reduce((s, e) => s + e.days, 0)} Gerätetage</span>
+              <span className="text-violet-600">{fmt(f.equipment.total)}</span>
+            </div>
+          </CollapsibleSection>
+
+          {/* Vehicles */}
+          <CollapsibleSection
+            title="Fahrzeuge (Fuhrpark)"
+            total={f.vehicles.total}
+            count={f.vehicles.entries.length}
+            colorClass="text-orange-600"
+          >
+            {f.vehicles.entries.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Fahrzeuge zugewiesen</p>
+            ) : (
+              f.vehicles.entries.map((e, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{e.plate}</p>
+                    <p className="text-xs text-slate-400">{e.km} km · Kraftstoff: {fmt(e.fuelCost)} · Leasing/Fix: {fmt(e.leasingCost)}</p>
+                  </div>
+                  <span className="font-medium text-slate-700">{fmt(e.cost)}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
+              <span>{f.vehicles.entries.reduce((s, e) => s + e.km, 0)} km · {f.vehicles.entries.length} Fahrzeuge</span>
+              <span className="text-orange-600">{fmt(f.vehicles.total)}</span>
+            </div>
+          </CollapsibleSection>
+
+          {/* Materials */}
+          <CollapsibleSection
+            title="Materialien (Lager)"
+            total={f.materials.total}
+            count={f.materials.entries.length}
+            colorClass="text-emerald-600"
+          >
+            {f.materials.entries.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Materialentnahmen</p>
+            ) : (
+              f.materials.entries.map((e, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{e.name}</p>
+                    <p className="text-xs text-slate-400">{e.quantity} Stk à {fmt(e.unitPrice)}</p>
+                  </div>
+                  <span className="font-medium text-slate-700">{fmt(e.cost)}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
+              <span>{f.materials.entries.length} Materialien</span>
+              <span className="text-emerald-600">{fmt(f.materials.total)}</span>
+            </div>
+          </CollapsibleSection>
+
+          {/* Subcontractors */}
+          <CollapsibleSection
+            title="Subunternehmer"
+            total={f.subcontractors.total}
+            count={f.subcontractors.entries.length}
+            colorClass="text-rose-600"
+          >
+            {f.subcontractors.entries.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Subunternehmer-Rechnungen</p>
+            ) : (
+              f.subcontractors.entries.map((e, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-slate-900">{e.name}</p>
+                    {e.description && <p className="text-xs text-slate-400">{e.description}</p>}
+                  </div>
+                  <span className="font-medium text-slate-700">{fmt(e.invoiced)}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
+              <span>{f.subcontractors.entries.length} Subunternehmer-Rechnungen</span>
+              <span className="text-rose-600">{fmt(f.subcontractors.total)}</span>
+            </div>
+          </CollapsibleSection>
+
+          {/* Summary row */}
+          <div className="flex items-center justify-between rounded-lg bg-slate-900 px-4 py-3 text-sm">
+            <span className="font-semibold text-white">Gesamtkosten (automatisch)</span>
+            <span className="font-bold text-white">{fmt(f.grandTotal)}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Manual cost entries */}
+      <Card>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Manuelle Kosten</h3>
+        {f.other.entries.length > 0 && (
+          <div className="mb-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+            {f.other.entries.map((c, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <span className="font-medium text-slate-900">{c.description}</span>
+                <span className="font-medium text-slate-700">{fmt(c.amount)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <h4 className="mb-3 text-sm font-semibold text-slate-700">Kosten hinzufügen</h4>
         <form action={action} className="grid gap-3 sm:grid-cols-4">
           <div className="sm:col-span-2"><Input label="Beschreibung" name="description" required error={state?.errors?.description?.[0]} /></div>
           <Input label="Betrag (€)" name="amount" type="number" step="0.01" required />
@@ -366,107 +498,169 @@ function AufmassTab({ details }: { details: OrderDetails }) {
   )
 }
 
-function NachkalkulationTab({ details }: { details: OrderDetails }) {
-  const f = details.financials
-
-  // Derive SOLL from order items (revenue)
-  const sollRevenue = f.revenue
-
-  // IST breakdown
-  const istLabor = f.laborCost
-  const istMaterial = (details.costs as { category: string; amount: number }[])
-    .filter(c => c.category === 'material')
-    .reduce((s, c) => s + Number(c.amount), 0)
-  const istSub = f.subCosts
-  const istOther = (details.costs as { category: string; amount: number }[])
-    .filter(c => c.category !== 'material')
-    .reduce((s, c) => s + Number(c.amount), 0)
-  const istTotal = f.totalCosts
-  const profit = f.profit
-  const margin = f.margin
-
+function NachkalkulationTab({ details, costBreakdown }: { details: OrderDetails; costBreakdown: OrderCostBreakdown }) {
+  const f = costBreakdown
   const fmt = (n: number) => n.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
 
-  const rows: { label: string; soll: string; ist: string; diff: string; diffColor: string }[] = [
-    {
-      label: 'Personalkosten',
-      soll: '–',
-      ist: fmt(istLabor),
-      diff: '–',
-      diffColor: '',
-    },
-    {
-      label: 'Materialkosten',
-      soll: '–',
-      ist: fmt(istMaterial),
-      diff: '–',
-      diffColor: '',
-    },
-    {
-      label: 'Subunternehmer',
-      soll: '–',
-      ist: fmt(istSub),
-      diff: '–',
-      diffColor: '',
-    },
-    {
-      label: 'Sonstige Kosten',
-      soll: '–',
-      ist: fmt(istOther),
-      diff: '–',
-      diffColor: '',
-    },
-  ]
-
-  const totalBarPct = sollRevenue > 0 ? Math.min(100, (istTotal / sollRevenue) * 100) : 0
+  const totalBarPct = f.revenue > 0 ? Math.min(100, (f.grandTotal / f.revenue) * 100) : 0
   const barColor = totalBarPct >= 95 ? 'bg-red-500' : totalBarPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+
+  const categories: { label: string; total: number; count: number; colorClass: string }[] = [
+    { label: 'Personalkosten', total: f.labor.total, count: f.labor.entries.length, colorClass: 'text-blue-600' },
+    { label: 'Materialkosten', total: f.materials.total, count: f.materials.entries.length, colorClass: 'text-emerald-600' },
+    { label: 'Gerätekosten', total: f.equipment.total, count: f.equipment.entries.length, colorClass: 'text-violet-600' },
+    { label: 'Fahrzeugkosten', total: f.vehicles.total, count: f.vehicles.entries.length, colorClass: 'text-orange-600' },
+    { label: 'Subunternehmer', total: f.subcontractors.total, count: f.subcontractors.entries.length, colorClass: 'text-rose-600' },
+    { label: 'Sonstige Kosten', total: f.other.total, count: f.other.entries.length, colorClass: 'text-slate-600' },
+  ]
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Full breakdown table */}
       <Card className="p-0">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left bg-slate-50">
               <th className="px-4 py-3 font-medium text-slate-500">Kategorie</th>
-              <th className="px-4 py-3 font-medium text-slate-500 text-right">SOLL (Angebot)</th>
+              <th className="px-4 py-3 font-medium text-slate-500 text-right">Einträge</th>
               <th className="px-4 py-3 font-medium text-slate-500 text-right">IST (Tatsächlich)</th>
-              <th className="px-4 py-3 font-medium text-slate-500 text-right">Abweichung</th>
+              <th className="px-4 py-3 font-medium text-slate-500 text-right">Anteil</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {rows.map((row) => (
-              <tr key={row.label}>
-                <td className="px-4 py-3 font-medium text-slate-900">{row.label}</td>
-                <td className="px-4 py-3 text-right text-slate-400">{row.soll}</td>
-                <td className="px-4 py-3 text-right text-slate-700">{row.ist}</td>
-                <td className={`px-4 py-3 text-right ${row.diffColor}`}>{row.diff}</td>
+            {categories.map((cat) => (
+              <tr key={cat.label}>
+                <td className="px-4 py-3 font-medium text-slate-900">{cat.label}</td>
+                <td className="px-4 py-3 text-right text-slate-500">{cat.count}</td>
+                <td className={`px-4 py-3 text-right font-medium ${cat.colorClass}`}>{fmt(cat.total)}</td>
+                <td className="px-4 py-3 text-right text-slate-400">
+                  {f.grandTotal > 0 ? `${Math.round((cat.total / f.grandTotal) * 100)}%` : '–'}
+                </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-slate-300 bg-slate-50">
               <td className="px-4 py-3 font-bold text-slate-900">Gesamtkosten</td>
-              <td className="px-4 py-3 text-right text-slate-400">–</td>
-              <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(istTotal)}</td>
-              <td className="px-4 py-3 text-right text-slate-400">–</td>
+              <td className="px-4 py-3 text-right text-slate-400">{categories.reduce((s, c) => s + c.count, 0)}</td>
+              <td className="px-4 py-3 text-right font-bold text-slate-900">{fmt(f.grandTotal)}</td>
+              <td className="px-4 py-3 text-right text-slate-400">100%</td>
             </tr>
             <tr className="border-t border-slate-200">
               <td className="px-4 py-3 font-medium text-slate-900">Auftragswert</td>
-              <td className="px-4 py-3 text-right font-bold text-[#1e3a5f]">{fmt(sollRevenue)}</td>
               <td className="px-4 py-3 text-right text-slate-400">–</td>
+              <td className="px-4 py-3 text-right font-bold text-[#1e3a5f]">{fmt(f.revenue)}</td>
               <td className="px-4 py-3 text-right text-slate-400">–</td>
             </tr>
             <tr className="border-t border-slate-200">
               <td className="px-4 py-3 font-medium text-slate-900">Gewinn/Verlust</td>
               <td className="px-4 py-3 text-right text-slate-400">–</td>
-              <td className={`px-4 py-3 text-right font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(profit)}</td>
-              <td className={`px-4 py-3 text-right font-bold ${margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{margin}%</td>
+              <td className={`px-4 py-3 text-right font-bold ${f.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(f.profit)}</td>
+              <td className={`px-4 py-3 text-right font-bold ${f.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{f.margin}%</td>
             </tr>
           </tfoot>
         </table>
       </Card>
 
-      {/* Visual bar chart */}
+      {/* Expandable detail sections */}
+      <div className="flex flex-col gap-3">
+        <h3 className="text-base font-semibold text-slate-900">Details nach Kategorie</h3>
+
+        <CollapsibleSection title="Personalkosten (Zeiterfassung)" total={f.labor.total} count={f.labor.entries.length} colorClass="text-blue-600">
+          {f.labor.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Zeiteinträge erfasst</p>
+          ) : (
+            f.labor.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{e.name}</p>
+                  <p className="text-xs text-slate-400">{e.hours}h à {fmt(e.rate)}/h</p>
+                </div>
+                <span className="font-medium">{fmt(e.cost)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Materialkosten (Lager)" total={f.materials.total} count={f.materials.entries.length} colorClass="text-emerald-600">
+          {f.materials.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Materialentnahmen</p>
+          ) : (
+            f.materials.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{e.name}</p>
+                  <p className="text-xs text-slate-400">{e.quantity} Stk à {fmt(e.unitPrice)}</p>
+                </div>
+                <span className="font-medium">{fmt(e.cost)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Gerätekosten (Gerätepark)" total={f.equipment.total} count={f.equipment.entries.length} colorClass="text-violet-600">
+          {f.equipment.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Geräte zugewiesen</p>
+          ) : (
+            f.equipment.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{e.name}</p>
+                  <p className="text-xs text-slate-400">{e.days} Tage à {fmt(e.dailyRate)}/Tag</p>
+                </div>
+                <span className="font-medium">{fmt(e.cost)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Fahrzeugkosten (Fuhrpark)" total={f.vehicles.total} count={f.vehicles.entries.length} colorClass="text-orange-600">
+          {f.vehicles.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Fahrzeuge zugewiesen</p>
+          ) : (
+            f.vehicles.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{e.plate}</p>
+                  <p className="text-xs text-slate-400">{e.km} km · Kraftstoff: {fmt(e.fuelCost)} · Fix: {fmt(e.leasingCost)}</p>
+                </div>
+                <span className="font-medium">{fmt(e.cost)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Subunternehmer" total={f.subcontractors.total} count={f.subcontractors.entries.length} colorClass="text-rose-600">
+          {f.subcontractors.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Subunternehmer-Rechnungen</p>
+          ) : (
+            f.subcontractors.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{e.name}</p>
+                  {e.description && <p className="text-xs text-slate-400">{e.description}</p>}
+                </div>
+                <span className="font-medium">{fmt(e.invoiced)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Sonstige Kosten (Manuell)" total={f.other.total} count={f.other.entries.length} colorClass="text-slate-600">
+          {f.other.entries.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Keine manuellen Kostenbuchungen</p>
+          ) : (
+            f.other.entries.map((e, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
+                <p className="font-medium text-slate-900">{e.description}</p>
+                <span className="font-medium">{fmt(e.amount)}</span>
+              </div>
+            ))
+          )}
+        </CollapsibleSection>
+      </div>
+
+      {/* Visual comparison bar */}
       <Card>
         <h3 className="mb-4 text-lg font-semibold text-slate-900">Gesamtvergleich</h3>
         <div className="space-y-4">
@@ -479,27 +673,27 @@ function NachkalkulationTab({ details }: { details: OrderDetails }) {
               <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${totalBarPct}%` }} />
             </div>
             <div className="mt-1 flex justify-between text-xs text-slate-400">
-              <span>{fmt(istTotal)} Kosten</span>
-              <span>{fmt(sollRevenue)} Auftragswert</span>
+              <span>{fmt(f.grandTotal)} Kosten</span>
+              <span>{fmt(f.revenue)} Auftragswert</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
             <div className="rounded-lg bg-slate-50 p-3 text-center">
               <p className="text-xs text-slate-500 mb-1">Auftragswert</p>
-              <p className="text-lg font-bold text-[#1e3a5f]">{fmt(sollRevenue)}</p>
+              <p className="text-lg font-bold text-[#1e3a5f]">{fmt(f.revenue)}</p>
             </div>
             <div className="rounded-lg bg-slate-50 p-3 text-center">
               <p className="text-xs text-slate-500 mb-1">Gesamtkosten</p>
-              <p className="text-lg font-bold text-slate-900">{fmt(istTotal)}</p>
+              <p className="text-lg font-bold text-slate-900">{fmt(f.grandTotal)}</p>
             </div>
-            <div className={`rounded-lg p-3 text-center ${profit >= 0 ? 'bg-emerald-50' : 'bg-red-50'}`}>
+            <div className={`rounded-lg p-3 text-center ${f.profit >= 0 ? 'bg-emerald-50' : 'bg-red-50'}`}>
               <p className="text-xs text-slate-500 mb-1">Gewinn/Verlust</p>
-              <p className={`text-lg font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(profit)}</p>
+              <p className={`text-lg font-bold ${f.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(f.profit)}</p>
             </div>
-            <div className={`rounded-lg p-3 text-center ${margin >= 15 ? 'bg-emerald-50' : margin >= 5 ? 'bg-amber-50' : 'bg-red-50'}`}>
+            <div className={`rounded-lg p-3 text-center ${f.margin >= 15 ? 'bg-emerald-50' : f.margin >= 5 ? 'bg-amber-50' : 'bg-red-50'}`}>
               <p className="text-xs text-slate-500 mb-1">Marge</p>
-              <p className={`text-lg font-bold ${margin >= 15 ? 'text-emerald-600' : margin >= 5 ? 'text-[#f59e0b]' : 'text-red-600'}`}>{margin}%</p>
+              <p className={`text-lg font-bold ${f.margin >= 15 ? 'text-emerald-600' : f.margin >= 5 ? 'text-[#f59e0b]' : 'text-red-600'}`}>{f.margin}%</p>
             </div>
           </div>
         </div>

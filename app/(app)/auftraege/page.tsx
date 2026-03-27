@@ -160,8 +160,11 @@ export default async function AuftraegePage({
                     {margin !== null && (
                       <div className={`flex items-center justify-end gap-1 text-xs font-medium ${marginColor}`}>
                         <MarginIcon className="h-3.5 w-3.5" />
-                        {margin.toFixed(1)}% Marge
+                        {margin.toFixed(1)}% Marge*
                       </div>
+                    )}
+                    {margin !== null && (
+                      <p className="text-right text-xs text-slate-300 leading-tight">*Detailkosten im Auftrag</p>
                     )}
                   </div>
                 </div>

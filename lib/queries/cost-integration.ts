@@ -30,7 +30,8 @@ export async function calculateFullOrderCosts(supabase: SupabaseClient, orderId:
 
     const byWorker = new Map<string, { name: string; hours: number; rate: number }>()
     for (const e of timeEntries || []) {
-      const p = e.profiles as { first_name: string; last_name: string; hourly_rate: number | null } | null
+      const rawProfiles = e.profiles as unknown
+      const p = (Array.isArray(rawProfiles) ? rawProfiles[0] : rawProfiles) as { first_name: string; last_name: string; hourly_rate: number | null } | null
       if (!p) continue
       const hours = Math.max(0, (new Date(e.clock_out as string).getTime() - new Date(e.clock_in as string).getTime()) / 3600000 - (e.break_minutes as number) / 60)
       const name = `${p.first_name} ${p.last_name}`
@@ -54,13 +55,17 @@ export async function calculateFullOrderCosts(supabase: SupabaseClient, orderId:
     .eq('type', 'out')
     .or(siteId ? `site_id.eq.${siteId},order_id.eq.${orderId}` : `order_id.eq.${orderId}`)
 
-  const materialEntries = (materialMovements || []).map((m: { quantity: number; unit_price: number | null; materials: { name: string; price_per_unit: number | null } | null }) => {
-    const unitPrice = m.unit_price || m.materials?.price_per_unit || 0
+  type RawMaterial = { name: unknown; price_per_unit: unknown }
+  const materialEntries = (materialMovements || []).map((m: { quantity: unknown; unit_price: unknown; materials: RawMaterial | RawMaterial[] | null | unknown }) => {
+    const rawMat = Array.isArray(m.materials) ? m.materials[0] : m.materials
+    const mat = rawMat as { name: string; price_per_unit: number | null } | null
+    const unitPrice = Number(m.unit_price) || mat?.price_per_unit || 0
+    const qty = Number(m.quantity)
     return {
-      name: m.materials?.name || 'Unbekannt',
-      quantity: m.quantity,
+      name: mat?.name || 'Unbekannt',
+      quantity: qty,
       unitPrice,
-      cost: Math.round(m.quantity * unitPrice * 100) / 100,
+      cost: Math.round(qty * unitPrice * 100) / 100,
     }
   })
   const materialsTotal = materialEntries.reduce((s, e) => s + e.cost, 0)
@@ -131,11 +136,15 @@ export async function calculateFullOrderCosts(supabase: SupabaseClient, orderId:
     .select('invoiced_amount, description, subcontractors(name)')
     .eq('order_id', orderId)
 
-  const subEntries = (subAssignments || []).map((s: { invoiced_amount: number; description: string; subcontractors: { name: string } | null }) => ({
-    name: s.subcontractors?.name || 'Unbekannt',
-    description: s.description,
-    invoiced: Number(s.invoiced_amount || 0),
-  }))
+  const subEntries = (subAssignments || []).map((s: { invoiced_amount: unknown; description: unknown; subcontractors: unknown }) => {
+    const rawSub = Array.isArray(s.subcontractors) ? s.subcontractors[0] : s.subcontractors
+    const sub = rawSub as { name: string } | null
+    return {
+      name: sub?.name || 'Unbekannt',
+      description: String(s.description || ''),
+      invoiced: Number(s.invoiced_amount || 0),
+    }
+  })
   const subTotal = subEntries.reduce((s, e) => s + e.invoiced, 0)
 
   // 6. OTHER: Direct order_costs entries
