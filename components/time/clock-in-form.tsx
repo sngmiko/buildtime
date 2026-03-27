@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/select'
 import { MapPin, Loader2 } from 'lucide-react'
 import type { ConstructionSite } from '@/lib/types'
 
-export function ClockInForm({ sites }: { sites: ConstructionSite[] }) {
+export function ClockInForm({ sites, defaultSiteId }: { sites: ConstructionSite[]; defaultSiteId?: string }) {
   const [state, action, pending] = useActionState<TimeEntryState, FormData>(clockIn, null)
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
@@ -49,6 +49,7 @@ export function ClockInForm({ sites }: { sites: ConstructionSite[] }) {
           name="site_id"
           options={[{ value: '', label: 'Baustelle wählen...' }, ...siteOptions]}
           error={state?.errors?.site_id?.[0]}
+          defaultValue={defaultSiteId || ''}
         />
       </div>
 

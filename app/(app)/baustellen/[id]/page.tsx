@@ -212,6 +212,33 @@ export default async function SiteDetailPage({
               <p className="text-sm text-slate-600 whitespace-pre-wrap">{s.notes}</p>
             </Card>
           )}
+
+          {/* QR Code */}
+          <Card className="lg:col-span-2">
+            <h3 className="mb-3 text-lg font-semibold text-slate-900">Einstempeln QR-Code</h3>
+            {(() => {
+              const stempelUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.buildtime.de'}/stempeln?site=${s.id}`
+              const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(stempelUrl)}`
+              return (
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                  <img src={qrUrl} alt="QR-Code zum Einstempeln" width={200} height={200} className="rounded-lg border border-slate-200" />
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm text-slate-600">
+                      Drucken Sie diesen QR-Code aus und hängen Sie ihn auf der Baustelle auf. Ihre Mitarbeiter können ihn scannen um direkt einzustempeln.
+                    </p>
+                    <a
+                      href={qrUrl}
+                      download={`qr-${s.name.replace(/\s+/g, '-')}.png`}
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors w-fit"
+                    >
+                      QR-Code herunterladen
+                    </a>
+                    <p className="text-xs text-slate-400 font-mono break-all">{stempelUrl}</p>
+                  </div>
+                </div>
+              )
+            })()}
+          </Card>
         </div>
       )}
 
