@@ -3,7 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, AlertTriangle } from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
+import { Plus, Users, AlertTriangle } from 'lucide-react'
 import type { ProfileExtended, Qualification } from '@/lib/types'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -28,26 +31,30 @@ export default async function MitarbeiterPage() {
     redirect('/stempeln')
   }
 
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('last_name')
-
-  const { data: pendingInvites } = await supabase
-    .from('invitations')
-    .select('*')
-    .is('accepted_at', null)
-    .gt('expires_at', new Date().toISOString())
-    .order('created_at', { ascending: false })
-
   const thirtyDaysFromNow = new Date()
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-  const { data: expiringQuals } = await supabase
-    .from('qualifications')
-    .select('*, profiles(first_name, last_name)')
-    .lte('expiry_date', thirtyDaysFromNow.toISOString())
-    .gte('expiry_date', new Date().toISOString())
-    .order('expiry_date')
+
+  const [
+    { data: profiles },
+    { data: pendingInvites },
+    { data: expiringQuals },
+    dismissedTips,
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').order('last_name'),
+    supabase
+      .from('invitations')
+      .select('*')
+      .is('accepted_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('qualifications')
+      .select('*, profiles(first_name, last_name)')
+      .lte('expiry_date', thirtyDaysFromNow.toISOString())
+      .gte('expiry_date', new Date().toISOString())
+      .order('expiry_date'),
+    getDismissedTips(),
+  ])
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,38 +81,54 @@ export default async function MitarbeiterPage() {
         </Card>
       )}
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="pb-3 font-medium text-slate-500">Name</th>
-                <th className="pb-3 font-medium text-slate-500">Rolle</th>
-                <th className="pb-3 font-medium text-slate-500">Telefon</th>
-                <th className="pb-3 font-medium text-slate-500">Vertrag</th>
-                <th className="pb-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(profiles as ProfileExtended[])?.map((p) => (
-                <tr key={p.id}>
-                  <td className="py-3 font-medium text-slate-900">{p.first_name} {p.last_name}</td>
-                  <td className="py-3 text-slate-600">{ROLE_LABELS[p.role] || p.role}</td>
-                  <td className="py-3 text-slate-600">{p.phone || '–'}</td>
-                  <td className="py-3 text-slate-600">
-                    {p.contract_type ? { permanent: 'Fest', temporary: 'Befristet', minijob: 'Minijob', intern: 'Praktikum' }[p.contract_type] : '–'}
-                  </td>
-                  <td className="py-3 text-right">
-                    <Link href={`/mitarbeiter/${p.id}`}>
-                      <Button variant="ghost" size="sm">Details</Button>
-                    </Link>
-                  </td>
+      {profiles && profiles.length > 0 && profiles.length <= 2 && (
+        <TipBanner tipKey="employees_invite" dismissed={dismissedTips.has('employees_invite')}>
+          Tipp: Arbeiter brauchen nur den Einladungslink per WhatsApp. Sie setzen ein Passwort und können sofort Zeiten stempeln.
+        </TipBanner>
+      )}
+
+      {(!profiles || profiles.length === 0) ? (
+        <EmptyState
+          icon={Users}
+          title="Laden Sie Ihr Team ein"
+          description="Mitarbeiter erhalten einen Link per WhatsApp und können sofort loslegen. Kein eigenes Konto nötig."
+          actionLabel="Mitarbeiter einladen"
+          actionHref="/mitarbeiter/einladen"
+        />
+      ) : (
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="pb-3 font-medium text-slate-500">Name</th>
+                  <th className="pb-3 font-medium text-slate-500">Rolle</th>
+                  <th className="pb-3 font-medium text-slate-500">Telefon</th>
+                  <th className="pb-3 font-medium text-slate-500">Vertrag</th>
+                  <th className="pb-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(profiles as ProfileExtended[])?.map((p) => (
+                  <tr key={p.id}>
+                    <td className="py-3 font-medium text-slate-900">{p.first_name} {p.last_name}</td>
+                    <td className="py-3 text-slate-600">{ROLE_LABELS[p.role] || p.role}</td>
+                    <td className="py-3 text-slate-600">{p.phone || '–'}</td>
+                    <td className="py-3 text-slate-600">
+                      {p.contract_type ? { permanent: 'Fest', temporary: 'Befristet', minijob: 'Minijob', intern: 'Praktikum' }[p.contract_type] : '–'}
+                    </td>
+                    <td className="py-3 text-right">
+                      <Link href={`/mitarbeiter/${p.id}`}>
+                        <Button variant="ghost" size="sm">Details</Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {pendingInvites && pendingInvites.length > 0 && (
         <>

@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
 import { HardHat, Plus, MapPin, Calendar, Euro, Users } from 'lucide-react'
 import type { ConstructionSite } from '@/lib/types'
 import { formatNumber } from '@/lib/format'
@@ -33,6 +36,7 @@ export default async function BaustellenPage() {
     { data: sites },
     { data: timeEntries },
     { data: managers },
+    dismissedTips,
   ] = await Promise.all([
     supabase
       .from('construction_sites')
@@ -47,6 +51,7 @@ export default async function BaustellenPage() {
       .from('profiles')
       .select('id, first_name, last_name')
       .in('role', ['owner', 'foreman']),
+    getDismissedTips(),
   ])
 
   // Build worker count per site
@@ -75,16 +80,20 @@ export default async function BaustellenPage() {
         </Link>
       </div>
 
+      {sites && sites.length > 0 && sites.length <= 2 && (
+        <TipBanner tipKey="sites_qr" dismissed={dismissedTips.has('sites_qr')}>
+          Tipp: Drucken Sie den QR-Code Ihrer Baustelle aus und hängen Sie ihn am Eingang auf. So können Mitarbeiter beim Betreten direkt einstempeln.
+        </TipBanner>
+      )}
+
       {(!sites || sites.length === 0) ? (
-        <Card className="flex flex-col items-center gap-4 py-12 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <HardHat className="h-8 w-8 text-slate-400" />
-          </div>
-          <p className="text-slate-500">Noch keine Baustellen vorhanden</p>
-          <Link href="/baustellen/neu">
-            <Button variant="secondary">Erste Baustelle anlegen</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          icon={HardHat}
+          title="Ihre Baustellen erscheinen hier"
+          description="Legen Sie jetzt Ihre erste Baustelle an und Ihre Mitarbeiter können sofort Zeiten erfassen."
+          actionLabel="Erste Baustelle anlegen"
+          actionHref="/baustellen/neu"
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(sites as ConstructionSite[]).map((site) => {

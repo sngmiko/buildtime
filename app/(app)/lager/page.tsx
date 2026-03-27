@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
 import { Plus, Package, AlertTriangle } from 'lucide-react'
 import type { Material, Supplier, PurchaseOrder } from '@/lib/types'
 import { formatNumber } from '@/lib/format'
@@ -47,18 +50,17 @@ export default async function LagerPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const { data: materials } = await supabase
-    .from('materials')
-    .select('*, suppliers(name)')
-    .order('name')
-  const { data: suppliers } = await supabase
-    .from('suppliers')
-    .select('*')
-    .order('name')
-  const { data: orders } = await supabase
-    .from('purchase_orders')
-    .select('*, suppliers(name)')
-    .order('order_date', { ascending: false })
+  const [
+    { data: materials },
+    { data: suppliers },
+    { data: orders },
+    dismissedTips,
+  ] = await Promise.all([
+    supabase.from('materials').select('*, suppliers(name)').order('name'),
+    supabase.from('suppliers').select('*').order('name'),
+    supabase.from('purchase_orders').select('*, suppliers(name)').order('order_date', { ascending: false }),
+    getDismissedTips(),
+  ])
 
   const lowStockMaterials = (materials as (Material & { suppliers: { name: string } | null })[] || [])
     .filter(m => m.current_stock <= m.min_stock)
@@ -112,50 +114,61 @@ export default async function LagerPage({
 
       {/* Tab: Materialien */}
       {activeTab === 'materialien' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(materials as (Material & { suppliers: { name: string } | null })[] || []).map((m) => {
-            const isLow = m.current_stock <= m.min_stock
-            return (
-              <Link key={m.id} href={`/lager/material/${m.id}`}>
-                <Card className="transition-shadow hover:shadow-md cursor-pointer">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 truncate">{m.name}</h3>
-                      {m.article_number && (
-                        <p className="text-xs text-slate-400">Art.-Nr. {m.article_number}</p>
-                      )}
-                      <p className="text-sm text-slate-500">{CATEGORY_LABELS[m.category]}</p>
-                      {m.suppliers && (
-                        <p className="text-xs text-slate-400">{m.suppliers.name}</p>
-                      )}
-                    </div>
-                    <div className="ml-3 text-right shrink-0">
-                      <p className={`text-sm font-semibold ${isLow ? 'text-red-600' : 'text-slate-900'}`}>
-                        {m.current_stock} {UNIT_LABELS[m.unit]}
-                      </p>
-                      {isLow && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
-                          <AlertTriangle className="h-3 w-3" /> Niedrig
-                        </span>
-                      )}
-                      {m.price_per_unit != null && (
-                        <p className="text-xs text-slate-400 mt-1">
-                          {formatNumber(m.price_per_unit, 2)} €/{UNIT_LABELS[m.unit]}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            )
-          })}
-          {(!materials || materials.length === 0) && (
-            <Card className="col-span-full py-8 text-center text-sm text-slate-500">
-              <Package className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-              Keine Materialien vorhanden
-            </Card>
+        <>
+          {materials && materials.length > 0 && materials.length <= 2 && (
+            <TipBanner tipKey="inventory_minstock" dismissed={dismissedTips.has('inventory_minstock')}>
+              Tipp: Setzen Sie einen Mindestbestand. BuildTime warnt Sie automatisch wenn Material nachbestellt werden muss.
+            </TipBanner>
           )}
-        </div>
+          {(!materials || materials.length === 0) ? (
+            <EmptyState
+              icon={Package}
+              title="Ihr Materiallager"
+              description="Erfassen Sie Ihre Baustoffe, Werkzeuge und Verbrauchsmaterialien. Bei Entnahme für eine Baustelle werden die Kosten automatisch dem Auftrag zugeordnet."
+              actionLabel="Erstes Material anlegen"
+              actionHref="/lager/material-neu"
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(materials as (Material & { suppliers: { name: string } | null })[]).map((m) => {
+                const isLow = m.current_stock <= m.min_stock
+                return (
+                  <Link key={m.id} href={`/lager/material/${m.id}`}>
+                    <Card className="transition-shadow hover:shadow-md cursor-pointer">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-slate-900 truncate">{m.name}</h3>
+                          {m.article_number && (
+                            <p className="text-xs text-slate-400">Art.-Nr. {m.article_number}</p>
+                          )}
+                          <p className="text-sm text-slate-500">{CATEGORY_LABELS[m.category]}</p>
+                          {m.suppliers && (
+                            <p className="text-xs text-slate-400">{m.suppliers.name}</p>
+                          )}
+                        </div>
+                        <div className="ml-3 text-right shrink-0">
+                          <p className={`text-sm font-semibold ${isLow ? 'text-red-600' : 'text-slate-900'}`}>
+                            {m.current_stock} {UNIT_LABELS[m.unit]}
+                          </p>
+                          {isLow && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                              <AlertTriangle className="h-3 w-3" /> Niedrig
+                            </span>
+                          )}
+                          {m.price_per_unit != null && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              {formatNumber(m.price_per_unit, 2)} €/{UNIT_LABELS[m.unit]}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {/* Tab: Lieferanten */}

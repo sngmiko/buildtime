@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
 import { Plus, UsersRound, Star, AlertTriangle, Phone, Mail } from 'lucide-react'
 import type { Subcontractor } from '@/lib/types'
 
@@ -31,10 +34,10 @@ export default async function SubunternehmerPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const { data: subs } = await supabase
-    .from('subcontractors')
-    .select('*')
-    .order('name')
+  const [{ data: subs }, dismissedTips] = await Promise.all([
+    supabase.from('subcontractors').select('*').order('name'),
+    getDismissedTips(),
+  ])
 
   const now = new Date()
   const in30 = new Date()
@@ -57,16 +60,20 @@ export default async function SubunternehmerPage() {
         </Link>
       </div>
 
+      {subs && subs.length > 0 && subs.length <= 2 && (
+        <TipBanner tipKey="subs_48b" dismissed={dismissedTips.has('subs_48b')}>
+          Tipp: Hinterlegen Sie das Ablaufdatum der §48b-Freistellungsbescheinigung. BuildTime erinnert Sie 30 Tage vor Ablauf.
+        </TipBanner>
+      )}
+
       {(!subs || subs.length === 0) ? (
-        <Card className="flex flex-col items-center gap-4 py-12 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <UsersRound className="h-8 w-8 text-slate-400" />
-          </div>
-          <p className="text-slate-500">Noch keine Subunternehmer vorhanden</p>
-          <Link href="/subunternehmer/neu">
-            <Button variant="secondary">Ersten anlegen</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          icon={UsersRound}
+          title="Ihre Subunternehmer"
+          description="Verwalten Sie Nachunternehmer mit Kontaktdaten, Bewertungen und Freistellungsbescheinigungen (§48b). Rechnungen fließen automatisch in die Auftragskosten."
+          actionLabel="Ersten Sub anlegen"
+          actionHref="/subunternehmer/neu"
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(subs as Subcontractor[]).map((sub) => {

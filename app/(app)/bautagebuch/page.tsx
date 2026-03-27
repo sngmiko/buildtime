@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
 import { Plus, BookOpen, CloudSun, AlertCircle, Wrench, Boxes } from 'lucide-react'
 import type { DiaryEntry, ConstructionSite } from '@/lib/types'
 
@@ -22,7 +25,7 @@ export default async function BautagebuchPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const [{ data: sites }, { data: entries }] = await Promise.all([
+  const [{ data: sites }, { data: entries }, dismissedTips] = await Promise.all([
     supabase.from('construction_sites').select('id, name').order('name'),
     siteFilter
       ? supabase
@@ -35,6 +38,7 @@ export default async function BautagebuchPage({
           .select('*, construction_sites(name)')
           .order('entry_date', { ascending: false })
           .limit(50),
+    getDismissedTips(),
   ])
 
   const activeSite = siteFilter ? (sites || []).find(s => s.id === siteFilter) : null
@@ -81,16 +85,20 @@ export default async function BautagebuchPage({
         </div>
       )}
 
+      {entries && entries.length > 0 && entries.length <= 2 && (
+        <TipBanner tipKey="diary_weather" dismissed={dismissedTips.has('diary_weather')}>
+          Tipp: Klicken Sie auf &apos;Wetter laden&apos; — BuildTime holt das aktuelle Wetter automatisch per GPS und füllt die Felder für Sie.
+        </TipBanner>
+      )}
+
       {(!entries || entries.length === 0) ? (
-        <Card className="flex flex-col items-center gap-4 py-12 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <BookOpen className="h-8 w-8 text-slate-400" />
-          </div>
-          <p className="text-slate-500">Noch keine Tagebucheinträge vorhanden</p>
-          <Link href="/bautagebuch/neu">
-            <Button variant="secondary">Ersten Eintrag erstellen</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          icon={BookOpen}
+          title="Ihr Bautagebuch"
+          description="Dokumentieren Sie täglich den Fortschritt auf Ihren Baustellen. Wetter, Arbeiten, Vorkommnisse und Mängel — alles an einem Ort."
+          actionLabel="Ersten Eintrag erstellen"
+          actionHref="/bautagebuch/neu"
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {(entries as DiaryEntryWithSite[]).map((entry) => (

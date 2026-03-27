@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { TipBanner } from '@/components/ui/tip-banner'
+import { getDismissedTips } from '@/actions/activity'
 import { Plus, Truck, Wrench, AlertTriangle } from 'lucide-react'
 import type { Vehicle, Equipment } from '@/lib/types'
 import { formatNumber } from '@/lib/format'
@@ -36,8 +39,15 @@ export default async function FuhrparkPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const { data: vehicles } = await supabase.from('vehicles').select('*').order('license_plate')
-  const { data: equipment } = await supabase.from('equipment').select('*, construction_sites(name)').order('name')
+  const [
+    { data: vehicles },
+    { data: equipment },
+    dismissedTips,
+  ] = await Promise.all([
+    supabase.from('vehicles').select('*').order('license_plate'),
+    supabase.from('equipment').select('*, construction_sites(name)').order('name'),
+    getDismissedTips(),
+  ])
 
   // Warnings
   const thirtyDays = new Date()
@@ -87,27 +97,41 @@ export default async function FuhrparkPage({
       </div>
 
       {activeTab === 'vehicles' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(vehicles as Vehicle[] || []).map((v) => (
-            <Link key={v.id} href={`/fuhrpark/fahrzeug/${v.id}`}>
-              <Card className="transition-shadow hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-slate-900">{v.license_plate}</h3>
-                    <p className="text-sm text-slate-500">{v.make} {v.model} · {VEHICLE_TYPES[v.type]}</p>
-                    {v.mileage > 0 && <p className="text-xs text-slate-400">{formatNumber(v.mileage)} km</p>}
-                  </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[v.status]}`}>
-                    {STATUS_LABELS[v.status]}
-                  </span>
-                </div>
-              </Card>
-            </Link>
-          ))}
-          {(!vehicles || vehicles.length === 0) && (
-            <Card className="col-span-full py-8 text-center text-sm text-slate-500">Keine Fahrzeuge vorhanden</Card>
+        <>
+          {vehicles && vehicles.length > 0 && vehicles.length <= 2 && (
+            <TipBanner tipKey="fleet_costs" dismissed={dismissedTips.has('fleet_costs')}>
+              Tipp: Tragen Sie die monatlichen Kosten (Leasing, Versicherung, Steuer) ein. So sehen Sie in Ihren Aufträgen die tatsächlichen Fahrzeugkosten.
+            </TipBanner>
           )}
-        </div>
+          {(!vehicles || vehicles.length === 0) ? (
+            <EmptyState
+              icon={Truck}
+              title="Ihr Fuhrpark"
+              description="Verwalten Sie Ihre Fahrzeuge mit Tankbuch, Fahrtenbuch und TÜV-Erinnerungen. Alle Kosten fließen automatisch in Ihre Aufträge."
+              actionLabel="Erstes Fahrzeug anlegen"
+              actionHref="/fuhrpark/fahrzeug-neu"
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(vehicles as Vehicle[]).map((v) => (
+                <Link key={v.id} href={`/fuhrpark/fahrzeug/${v.id}`}>
+                  <Card className="transition-shadow hover:shadow-md">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-slate-900">{v.license_plate}</h3>
+                        <p className="text-sm text-slate-500">{v.make} {v.model} · {VEHICLE_TYPES[v.type]}</p>
+                        {v.mileage > 0 && <p className="text-xs text-slate-400">{formatNumber(v.mileage)} km</p>}
+                      </div>
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[v.status]}`}>
+                        {STATUS_LABELS[v.status]}
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {activeTab === 'equipment' && (
