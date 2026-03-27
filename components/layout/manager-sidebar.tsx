@@ -57,7 +57,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-slate-200 bg-white pt-14 shadow-sm transition-transform duration-300 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-slate-200/60 bg-white pt-14 shadow-sm transition-all duration-300 md:static md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -72,7 +72,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-[#1e3a5f] text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] text-white shadow-sm'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >

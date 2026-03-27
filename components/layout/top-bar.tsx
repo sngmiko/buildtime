@@ -29,7 +29,7 @@ export function TopBar({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-4 shadow-sm backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200/50 bg-white/80 px-6 shadow-sm backdrop-blur-xl">
       <div className="flex items-center gap-3">
         <span className="text-lg font-bold text-[#1e3a5f]">Build<span className="text-[#f59e0b]">Time</span></span>
         <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
