@@ -1,69 +1,67 @@
-'use client'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { ClockDisplay } from '@/components/time/clock-display'
+import { ClockInForm } from '@/components/time/clock-in-form'
+import { ClockOutForm } from '@/components/time/clock-out-form'
+import { DailyEntries } from '@/components/time/daily-entries'
+import type { TimeEntry, ConstructionSite } from '@/lib/types'
 
-import { useState, useEffect } from 'react'
+export default async function StempelnPage() {
+  const supabase = await createClient()
 
-export default function StempelnPage() {
-  const [time, setTime] = useState(new Date())
-  const [isClockedIn, setIsClockedIn] = useState(false)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(interval)
-  }, [])
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('company_id')
+    .eq('id', user.id)
+    .single()
 
-  const formattedTime = time.toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+  if (!profile) redirect('/login')
 
-  const formattedDate = time.toLocaleDateString('de-DE', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const { data: sites } = await supabase
+    .from('construction_sites')
+    .select('*')
+    .eq('status', 'active')
+    .order('name')
+
+  const { data: openEntry } = await supabase
+    .from('time_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .is('clock_out', null)
+    .maybeSingle()
+
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+
+  const { data: todayEntries } = await supabase
+    .from('time_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('clock_in', todayStart.toISOString())
+    .order('clock_in', { ascending: false })
+
+  const siteName = openEntry
+    ? (sites as ConstructionSite[])?.find((s) => s.id === openEntry.site_id)?.name || 'Unbekannt'
+    : ''
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 p-4">
-      {/* Time display */}
-      <div className="text-center">
-        <p className="text-6xl font-bold tabular-nums text-slate-900 sm:text-7xl">
-          {formattedTime}
-        </p>
-        <p className="mt-2 text-sm text-slate-500">{formattedDate}</p>
-      </div>
+    <div className="flex flex-1 flex-col items-center gap-8 p-4 pt-8">
+      <ClockDisplay />
 
-      {/* Clock in/out button */}
-      <button
-        onClick={() => setIsClockedIn(!isClockedIn)}
-        className={`group relative flex h-40 w-40 items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 sm:h-48 sm:w-48 ${
-          isClockedIn
-            ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30'
-            : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30'
-        }`}
-      >
-        <div className="text-center text-white">
-          <p className="text-lg font-bold sm:text-xl">
-            {isClockedIn ? 'Ausstempeln' : 'Einstempeln'}
-          </p>
-        </div>
-        {/* Pulse ring */}
-        {isClockedIn && (
-          <span className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-20" />
-        )}
-      </button>
+      {openEntry ? (
+        <ClockOutForm entry={openEntry as TimeEntry} siteName={siteName} />
+      ) : (
+        <ClockInForm sites={(sites as ConstructionSite[]) || []} />
+      )}
 
-      {/* Status */}
-      <div className="text-center">
-        <p className={`text-sm font-medium ${isClockedIn ? 'text-emerald-600' : 'text-slate-500'}`}>
-          {isClockedIn
-            ? `Eingestempelt seit ${time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`
-            : 'Noch nicht eingestempelt'}
-        </p>
-        <p className="mt-1 text-xs text-slate-400">
-          GPS-Standort wird beim Stempeln erfasst
-        </p>
+      <div className="w-full max-w-md">
+        <DailyEntries
+          entries={(todayEntries as TimeEntry[]) || []}
+          sites={(sites as ConstructionSite[]) || []}
+        />
       </div>
     </div>
   )
