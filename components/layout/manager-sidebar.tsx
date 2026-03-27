@@ -32,7 +32,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
     <>
       {/* Mobile hamburger */}
       <button
-        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[--color-primary] text-white shadow-lg transition-transform hover:scale-105 md:hidden"
+        className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#1e3a5f] text-white shadow-lg transition-transform hover:scale-105 md:hidden"
         onClick={() => setOpen(!open)}
         aria-label="Navigation öffnen"
       >
@@ -64,7 +64,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-[--color-primary] text-white shadow-sm'
+                    ? 'bg-[#1e3a5f] text-white shadow-sm'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >

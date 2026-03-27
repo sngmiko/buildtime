@@ -26,11 +26,11 @@ export function WorkerBottomNav() {
               href={tab.href}
               className={`flex flex-1 flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
                 active
-                  ? 'text-[--color-primary]'
+                  ? 'text-[#1e3a5f]'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <Icon className={`h-5 w-5 ${active ? 'text-[--color-primary]' : ''}`} />
+              <Icon className={`h-5 w-5 ${active ? 'text-[#1e3a5f]' : ''}`} />
               {tab.label}
             </Link>
           )

@@ -57,7 +57,7 @@ export default async function ZeitenPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Meine Zeiten</h1>
-        <div className="flex items-center gap-2 rounded-lg bg-[--color-primary] px-3 py-1.5 text-sm font-medium text-white">
+        <div className="flex items-center gap-2 rounded-lg bg-[#1e3a5f] px-3 py-1.5 text-sm font-medium text-white">
           <Clock className="h-4 w-4" />
           {totalHours}:{totalMins.toString().padStart(2, '0')} Std. (7 Tage)
         </div>

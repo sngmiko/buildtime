@@ -6,10 +6,10 @@ export default function PublicLayout({
   return (
     <div className="flex flex-1">
       {/* Left: Hero branding area */}
-      <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-[--color-primary] p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-[#1e3a5f] p-12 text-white">
         <div>
           <h1 className="text-3xl font-bold">
-            Build<span className="text-[--color-accent]">Time</span>
+            Build<span className="text-[#f59e0b]">Time</span>
           </h1>
         </div>
         <div className="space-y-4">
@@ -22,15 +22,15 @@ export default function PublicLayout({
           </p>
           <div className="mt-8 flex gap-6 text-sm text-blue-200/80">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[--color-accent]" />
+              <div className="h-2 w-2 rounded-full bg-[#f59e0b]" />
               GPS-verifiziert
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[--color-accent]" />
+              <div className="h-2 w-2 rounded-full bg-[#f59e0b]" />
               DSGVO-konform
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[--color-accent]" />
+              <div className="h-2 w-2 rounded-full bg-[#f59e0b]" />
               Made in Germany
             </div>
           </div>
@@ -45,8 +45,8 @@ export default function PublicLayout({
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
-            <h1 className="text-2xl font-bold text-[--color-primary]">
-              Build<span className="text-[--color-accent]">Time</span>
+            <h1 className="text-2xl font-bold text-[#1e3a5f]">
+              Build<span className="text-[#f59e0b]">Time</span>
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Zeiterfassung für die Baustelle

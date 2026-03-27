@@ -21,7 +21,7 @@ export default async function RegisterPage({
 
       <p className="text-center text-sm text-slate-500">
         Bereits registriert?{' '}
-        <Link href="/login" className="font-medium text-[--color-primary] hover:underline">
+        <Link href="/login" className="font-medium text-[#1e3a5f] hover:underline">
           Anmelden
         </Link>
       </p>

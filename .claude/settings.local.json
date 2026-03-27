@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/X/Projects/buildtime/node_modules/next/dist/docs/ -name *authentication* -o -name *route*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(node -e \"console.log\\(require\\(''zod/package.json''\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\(''vitest/package.json''\\).version\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(git rm:*)",
+      "Bash(ls:*)",
+      "Bash(ls /c/Users/X/Projects/buildtime/.worktrees/phase1/app/\\\\\\(app\\\\\\)/)",
+      "Bash(ls C:/Users/X/Projects/buildtime/.worktrees/phase1/app/\\\\\\(app\\\\\\)/)",
+      "Bash(ls C:/Users/X/Projects/buildtime/.worktrees/phase1/app/\\\\\\(public\\\\\\)/)",
+      "Bash(npx tsc:*)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(public\\\\\\)/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(app\\\\\\)/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(public\\\\\\)/login/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(public\\\\\\)/registrieren/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(app\\\\\\)/dashboard/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/app/\\\\\\(app\\\\\\)/stempeln/)",
+      "Bash(ls /c/Users/X/Projects/buildtime/.worktrees/phase2a/app/\\\\\\(app\\\\\\)/stempeln/)",
+      "Bash(ls \"C:/Users/X/Projects/buildtime/.worktrees/phase2a/app/\\(app\\)/\")"
+    ]
+  }
+}

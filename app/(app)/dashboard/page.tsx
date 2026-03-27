@@ -46,8 +46,8 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend'
 
   const stats = [
-    { label: 'Mitarbeiter', value: String(activeWorkers || 0), icon: Users, color: 'text-[--color-primary]', bg: 'bg-blue-50' },
-    { label: 'Aktive Baustellen', value: String(activeSites || 0), icon: HardHat, color: 'text-[--color-accent-dark]', bg: 'bg-amber-50' },
+    { label: 'Mitarbeiter', value: String(activeWorkers || 0), icon: Users, color: 'text-[#1e3a5f]', bg: 'bg-blue-50' },
+    { label: 'Aktive Baustellen', value: String(activeSites || 0), icon: HardHat, color: 'text-[#d97706]', bg: 'bg-amber-50' },
     { label: 'Stunden heute', value: totalHours, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'Offene Einladungen', value: String(openInvitations || 0), icon: Mail, color: 'text-violet-600', bg: 'bg-violet-50' },
   ]

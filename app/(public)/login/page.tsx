@@ -15,7 +15,7 @@ export default function LoginPage() {
 
       <p className="text-center text-sm text-slate-500">
         Noch kein Konto?{' '}
-        <Link href="/registrieren" className="font-medium text-[--color-primary] hover:underline">
+        <Link href="/registrieren" className="font-medium text-[#1e3a5f] hover:underline">
           Firma registrieren
         </Link>
       </p>

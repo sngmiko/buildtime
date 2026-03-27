@@ -42,7 +42,7 @@ export function DailyEntries({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-700">Heute</h3>
-        <span className="text-sm font-medium text-[--color-primary]">
+        <span className="text-sm font-medium text-[#1e3a5f]">
           {totalHours}:{totalMins.toString().padStart(2, '0')} Std.
         </span>
       </div>

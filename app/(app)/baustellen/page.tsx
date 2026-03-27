@@ -53,7 +53,7 @@ export default async function BaustellenPage() {
           </div>
           <p className="text-slate-500">Noch keine Baustellen vorhanden</p>
           <Link href="/baustellen/neu">
-            <Button variant="accent">Erste Baustelle anlegen</Button>
+            <Button variant="secondary">Erste Baustelle anlegen</Button>
           </Link>
         </Card>
       ) : (

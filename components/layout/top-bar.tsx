@@ -23,7 +23,7 @@ export function TopBar({
   return (
     <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm">
       <div className="flex items-center gap-3">
-        <span className="text-lg font-bold text-[--color-primary]">Build<span className="text-[--color-accent]">Time</span></span>
+        <span className="text-lg font-bold text-[#1e3a5f]">Build<span className="text-[#f59e0b]">Time</span></span>
         <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
           <Building2 className="h-3.5 w-3.5" />
           {companyName}
