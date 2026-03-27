@@ -516,3 +516,15 @@ export type PaymentReminder = {
   notes: string | null
   created_at: string
 }
+
+export type ActivityLog = {
+  id: string
+  company_id: string
+  user_id: string | null
+  action: string
+  entity_type: string
+  entity_id: string | null
+  title: string
+  details: Record<string, unknown> | null
+  created_at: string
+}

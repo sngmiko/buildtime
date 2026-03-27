@@ -8,17 +8,6 @@ import { Select } from '@/components/ui/select'
 import { CloudSun, Loader2 } from 'lucide-react'
 import type { ConstructionSite } from '@/lib/types'
 
-const WEATHER_OPTIONS = [
-  { value: '', label: '— Wetter wählen —' },
-  { value: 'Sonnig', label: 'Sonnig' },
-  { value: 'Bewölkt', label: 'Bewölkt' },
-  { value: 'Bedeckt', label: 'Bedeckt' },
-  { value: 'Regnerisch', label: 'Regnerisch' },
-  { value: 'Stark bewölkt', label: 'Stark bewölkt' },
-  { value: 'Sturm', label: 'Sturm' },
-  { value: 'Schnee', label: 'Schnee' },
-  { value: 'Frost', label: 'Frost' },
-]
 
 const WIND_OPTIONS = [
   { value: '', label: '— Wind —' },
@@ -122,14 +111,36 @@ export function DiaryEntryForm({ sites }: Props) {
           </button>
         </div>
         {weatherError && <p className="mb-2 text-xs text-red-600">{weatherError}</p>}
-        <div className="grid grid-cols-3 gap-3">
-          <Select
-            label="Wetter"
-            name="weather"
-            options={WEATHER_OPTIONS}
-            value={weatherValue}
-            onChange={(e) => setWeatherValue(e.target.value)}
-          />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700">Wetter</label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'Sonnig', icon: '☀️' },
+              { value: 'Bewölkt', icon: '⛅' },
+              { value: 'Bedeckt', icon: '☁️' },
+              { value: 'Regnerisch', icon: '🌧️' },
+              { value: 'Schnee', icon: '❄️' },
+              { value: 'Sturm', icon: '💨' },
+              { value: 'Frost', icon: '🥶' },
+            ].map((w) => (
+              <button
+                key={w.value}
+                type="button"
+                onClick={() => setWeatherValue(w.value)}
+                className={`flex items-center gap-1.5 rounded-lg border-2 px-3 py-2 text-sm transition-colors ${
+                  weatherValue === w.value
+                    ? 'border-[#1e3a5f] bg-blue-50 text-[#1e3a5f]'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                <span className="text-lg">{w.icon}</span>
+                {w.value}
+              </button>
+            ))}
+          </div>
+          <input type="hidden" name="weather" value={weatherValue} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           <Input
             label="Temperatur (°C)"
             name="temperature"

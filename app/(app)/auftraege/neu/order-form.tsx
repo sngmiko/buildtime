@@ -113,7 +113,7 @@ export function OrderForm({ customers, sites }: Props) {
         />
 
         <div className="grid grid-cols-2 gap-3">
-          <Input label="Startdatum" name="start_date" type="date" />
+          <Input label="Startdatum" name="start_date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
           <Input label="Enddatum" name="end_date" type="date" />
         </div>
 
