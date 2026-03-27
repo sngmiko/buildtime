@@ -5,6 +5,7 @@ import { ManagerSidebar } from '@/components/layout/manager-sidebar'
 import { WorkerBottomNav } from '@/components/layout/worker-bottom-nav'
 import { TrialBanner } from '@/components/layout/trial-banner'
 import { ToastProvider } from '@/components/ui/toast'
+import { QuickActions } from '@/components/layout/quick-actions'
 import { generateNotifications } from '@/lib/queries/notifications'
 import type { Profile, Company, CompanyExtended } from '@/lib/types'
 
@@ -62,6 +63,7 @@ export default async function AppLayout({
         </ToastProvider>
       </div>
       {isWorker && <WorkerBottomNav />}
+      {!isWorker && <QuickActions />}
     </div>
   )
 }
