@@ -155,3 +155,80 @@ export type SickDay = {
   notes: string | null
   created_at: string
 }
+
+export type VehicleType = 'car' | 'van' | 'truck'
+export type VehicleStatus = 'available' | 'in_use' | 'maintenance' | 'decommissioned'
+
+export type Vehicle = {
+  id: string
+  company_id: string
+  license_plate: string
+  make: string
+  model: string
+  year: number | null
+  type: VehicleType
+  mileage: number
+  status: VehicleStatus
+  assigned_to: string | null
+  leasing_cost: number | null
+  insurance_cost: number | null
+  tax_cost: number | null
+  next_inspection: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type EquipmentCategory = 'heavy' | 'power_tool' | 'tool' | 'safety' | 'other'
+export type EquipmentStatus = 'available' | 'in_use' | 'maintenance' | 'defect' | 'disposed'
+
+export type Equipment = {
+  id: string
+  company_id: string
+  name: string
+  category: EquipmentCategory
+  serial_number: string | null
+  purchase_date: string | null
+  purchase_price: number | null
+  daily_rate: number | null
+  status: EquipmentStatus
+  assigned_site: string | null
+  next_maintenance: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type FuelLog = {
+  id: string
+  company_id: string
+  vehicle_id: string
+  date: string
+  liters: number
+  cost: number
+  mileage: number | null
+  created_at: string
+}
+
+export type TripLog = {
+  id: string
+  company_id: string
+  vehicle_id: string
+  driver_id: string
+  date: string
+  start_location: string
+  end_location: string
+  km: number
+  purpose: string
+  created_at: string
+}
+
+export type EquipmentCost = {
+  id: string
+  company_id: string
+  equipment_id: string
+  type: 'maintenance' | 'repair' | 'fuel' | 'other'
+  amount: number
+  date: string
+  description: string | null
+  created_at: string
+}
