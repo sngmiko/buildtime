@@ -6,7 +6,12 @@ import { ClockOutForm } from '@/components/time/clock-out-form'
 import { DailyEntries } from '@/components/time/daily-entries'
 import type { TimeEntry, ConstructionSite } from '@/lib/types'
 
-export default async function StempelnPage() {
+export default async function StempelnPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ site?: string }>
+}) {
+  const { site: defaultSiteId } = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -54,7 +59,7 @@ export default async function StempelnPage() {
       {openEntry ? (
         <ClockOutForm entry={openEntry as TimeEntry} siteName={siteName} />
       ) : (
-        <ClockInForm sites={(sites as ConstructionSite[]) || []} />
+        <ClockInForm sites={(sites as ConstructionSite[]) || []} defaultSiteId={defaultSiteId} />
       )}
 
       <div className="w-full max-w-md">

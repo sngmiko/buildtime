@@ -9,6 +9,7 @@ export async function getOrderFullDetails(supabase: SupabaseClient, orderId: str
     { data: timeEntries },
     { data: diaryEntries },
     { data: subAssignments },
+    { data: measurements },
   ] = await Promise.all([
     supabase.from('orders').select('*, customers(name, contact_person, email, phone), construction_sites(name, address)').eq('id', orderId).single(),
     supabase.from('order_items').select('*').eq('order_id', orderId).order('position'),
@@ -24,6 +25,7 @@ export async function getOrderFullDetails(supabase: SupabaseClient, orderId: str
       return supabase.from('diary_entries').select('*').eq('site_id', data.site_id).order('entry_date', { ascending: false }).limit(10)
     }),
     supabase.from('subcontractor_assignments').select('*, subcontractors(name, trade)').eq('order_id', orderId),
+    supabase.from('measurements').select('*').eq('order_id', orderId).order('created_at', { ascending: false }),
   ])
 
   // Calculate financials
@@ -50,6 +52,7 @@ export async function getOrderFullDetails(supabase: SupabaseClient, orderId: str
     timeEntries: timeEntries || [],
     diaryEntries: diaryEntries || [],
     subAssignments: subAssignments || [],
+    measurements: measurements || [],
     financials: {
       revenue: Math.round(revenue * 100) / 100,
       laborCost: Math.round(laborCost * 100) / 100,

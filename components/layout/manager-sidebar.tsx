@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Users, Building2, User, Menu, X, HardHat, ClipboardList, Truck, Package, Briefcase, UsersRound, BookOpen } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, User, Menu, X, HardHat, ClipboardList, Truck, Package, Briefcase, UsersRound, BookOpen, FileText, CalendarDays } from 'lucide-react'
 import type { UserRole } from '@/lib/types'
 import type { LucideIcon } from 'lucide-react'
 
@@ -22,6 +22,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/fuhrpark', label: 'Fuhrpark', icon: Truck, roles: ['owner', 'foreman'] },
   { href: '/lager', label: 'Lager & Einkauf', icon: Package, roles: ['owner', 'foreman'] },
   { href: '/auftraege', label: 'Aufträge', icon: Briefcase, roles: ['owner', 'foreman'] },
+  { href: '/rechnungen', label: 'Rechnungen', icon: FileText, roles: ['owner', 'foreman'] },
+  { href: '/planung', label: 'Disposition', icon: CalendarDays, roles: ['owner', 'foreman'] },
   { href: '/subunternehmer', label: 'Subunternehmer', icon: UsersRound, roles: ['owner', 'foreman'] },
   { href: '/bautagebuch', label: 'Bautagebuch', icon: BookOpen, roles: ['owner', 'foreman'] },
   { href: '/firma', label: 'Firma', icon: Building2, roles: ['owner'] },

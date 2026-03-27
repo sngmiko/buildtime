@@ -11,6 +11,7 @@ export const profileSchema = z.object({
   first_name: z.string().min(1, 'Vorname ist erforderlich').max(100),
   last_name: z.string().min(1, 'Nachname ist erforderlich').max(100),
   phone: z.string().max(30).optional().or(z.literal('')),
+  language: z.enum(['de', 'pl', 'ro', 'tr', 'en']).optional(),
 })
 
 export type CompanyInput = z.infer<typeof companySchema>

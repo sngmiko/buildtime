@@ -7,6 +7,7 @@ export type Profile = {
   first_name: string
   last_name: string
   phone: string | null
+  language: string | null
   invited_by: string | null
   created_at: string
   updated_at: string
@@ -75,6 +76,7 @@ export type TimeEntry = {
   updated_at: string
   edited_by: string | null
   edited_at: string | null
+  photo_url: string | null
 }
 
 export type ContractType = 'permanent' | 'temporary' | 'minijob' | 'intern'
@@ -434,4 +436,83 @@ export const PLAN_CONFIG: Record<Plan, { name: string; price: number; maxEmploye
   starter: { name: 'Starter', price: 49, maxEmployees: 10, description: 'Bis 10 Mitarbeiter' },
   business: { name: 'Business', price: 99, maxEmployees: 30, description: 'Bis 30 Mitarbeiter' },
   enterprise: { name: 'Enterprise', price: 199, maxEmployees: 100, description: 'Bis 100 Mitarbeiter' },
+}
+
+// Invoicing
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+
+export type Invoice = {
+  id: string
+  company_id: string
+  order_id: string | null
+  customer_id: string
+  invoice_number: string
+  invoice_date: string
+  due_date: string | null
+  status: InvoiceStatus
+  subtotal: number
+  tax_rate: number
+  tax_amount: number
+  total: number
+  paid_amount: number
+  paid_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type InvoiceItem = {
+  id: string
+  invoice_id: string
+  position: number
+  description: string
+  quantity: number
+  unit: string
+  unit_price: number
+  total: number
+  created_at: string
+}
+
+// Weekly Planning
+export type ScheduleEntry = {
+  id: string
+  company_id: string
+  user_id: string
+  site_id: string
+  date: string
+  shift: 'full' | 'morning' | 'afternoon'
+  notes: string | null
+  created_at: string
+}
+
+// Measurements (Aufmaß)
+export type Measurement = {
+  id: string
+  company_id: string
+  order_id: string | null
+  site_id: string | null
+  description: string
+  length: number | null
+  width: number | null
+  height: number | null
+  quantity: number
+  unit: string
+  calculated_value: number | null
+  notes: string | null
+  measured_by: string
+  measured_at: string
+  created_at: string
+}
+
+// Payment Reminders
+export type PaymentReminder = {
+  id: string
+  company_id: string
+  invoice_id: string
+  reminder_level: number
+  sent_date: string
+  due_amount: number
+  fee: number
+  notes: string | null
+  created_at: string
 }

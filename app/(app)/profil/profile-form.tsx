@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import { updateProfile, type ProfileState } from '@/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import type { Profile } from '@/lib/types'
 
 export function ProfileForm({ profile, email }: { profile: Profile; email: string }) {
@@ -11,6 +12,18 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
 
   return (
     <form action={action} className="flex flex-col gap-4">
+      <Select
+        label="Sprache / Language"
+        name="language"
+        defaultValue={profile.language || 'de'}
+        options={[
+          { value: 'de', label: '🇩🇪 Deutsch' },
+          { value: 'en', label: '🇬🇧 English' },
+          { value: 'pl', label: '🇵🇱 Polski' },
+          { value: 'ro', label: '🇷🇴 Română' },
+          { value: 'tr', label: '🇹🇷 Türkçe' },
+        ]}
+      />
       <Input label="E-Mail" value={email} disabled />
       <div className="grid grid-cols-2 gap-3">
         <Input
