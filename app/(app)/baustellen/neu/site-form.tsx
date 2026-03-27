@@ -16,7 +16,7 @@ export function SiteForm({ foremen }: { foremen: { id: string; name: string }[] 
       <Input label="Beschreibung" name="description" placeholder="Kurze Beschreibung des Projekts" />
       <Input label="Adresse" name="address" placeholder="Straße, PLZ Ort" error={state?.errors?.address?.[0]} />
       <div className="grid grid-cols-2 gap-3">
-        <Input label="Geplanter Start" name="start_date" type="date" />
+        <Input label="Geplanter Start" name="start_date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
         <Input label="Geplantes Ende" name="end_date" type="date" />
       </div>
       <Input label="Budget (€)" name="budget" type="number" step="0.01" placeholder="150000.00" />

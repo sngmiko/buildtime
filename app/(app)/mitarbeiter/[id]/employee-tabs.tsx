@@ -16,6 +16,7 @@ import {
 } from '@/actions/employee'
 import type { ProfileExtended, Qualification, SafetyBriefing, LeaveRequest, SickDay } from '@/lib/types'
 import { AlertTriangle, Check, X, Shield, FileText, Calendar, Thermometer, Clock, Briefcase } from 'lucide-react'
+import { Tooltip } from '@/components/ui/tooltip'
 import { formatNumber } from '@/lib/format'
 
 const TABS = [
@@ -121,11 +122,44 @@ function DetailsTab({ employee, details }: { employee: ProfileExtended; details:
             <Input label="Monatsgehalt (€)" name="monthly_salary" type="number" step="0.01" defaultValue={employee.monthly_salary?.toString() || ''} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Steuerklasse" name="tax_class" defaultValue={employee.tax_class || ''} />
-            <Input label="SV-Nummer" name="social_security_number" defaultValue={employee.social_security_number || ''} />
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center">
+                <label htmlFor="steuerklasse" className="text-sm font-medium text-slate-700">Steuerklasse</label>
+                <Tooltip text="Steuerklasse 1-6. Bei Unsicherheit: Steuerklasse 1 (ledig) oder 4 (verheiratet)" />
+              </div>
+              <input
+                id="steuerklasse"
+                name="tax_class"
+                defaultValue={employee.tax_class || ''}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center">
+                <label htmlFor="sv-nummer" className="text-sm font-medium text-slate-700">SV-Nummer</label>
+                <Tooltip text="Die Sozialversicherungsnummer steht auf dem SV-Ausweis, z.B. 12 010190 M 123" />
+              </div>
+              <input
+                id="sv-nummer"
+                name="social_security_number"
+                defaultValue={employee.social_security_number || ''}
+                className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20"
+              />
+            </div>
           </div>
           <Input label="Krankenkasse" name="health_insurance" defaultValue={employee.health_insurance || ''} />
-          <Input label="IBAN" name="iban" defaultValue={employee.iban || ''} />
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center">
+              <label htmlFor="iban" className="text-sm font-medium text-slate-700">IBAN</label>
+              <Tooltip text="Für die Lohnüberweisung. Format: DE + 20 Ziffern" />
+            </div>
+            <input
+              id="iban"
+              name="iban"
+              defaultValue={employee.iban || ''}
+              className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20"
+            />
+          </div>
           <h4 className="mt-2 font-medium text-slate-700">Notfallkontakt</h4>
           <div className="grid grid-cols-3 gap-3">
             <Input label="Name" name="emergency_contact_name" defaultValue={employee.emergency_contact_name || ''} />
@@ -219,7 +253,35 @@ function QualificationsTab({ employee, qualifications }: { employee: ProfileExte
       <Card>
         <h3 className="mb-4 text-lg font-semibold text-slate-900">Neue Qualifikation</h3>
         <form action={action} className="flex flex-col gap-3">
-          <Input label="Bezeichnung" name="name" required placeholder="z.B. Staplerschein, SCC, Ersthelfer" error={state?.errors?.name?.[0]} />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="qual-name" className="text-sm font-medium text-slate-700">Bezeichnung *</label>
+            <input
+              id="qual-name"
+              list="qual-list"
+              name="name"
+              required
+              placeholder="Qualifikation wählen oder eingeben..."
+              className={`h-10 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 ${state?.errors?.name?.[0] ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-300'}`}
+            />
+            <datalist id="qual-list">
+              <option value="Staplerschein" />
+              <option value="Ersthelfer" />
+              <option value="SCC (Sicherheits-Zertifikat)" />
+              <option value="Gerüstbau-Befähigung" />
+              <option value="Schweißerschein" />
+              <option value="Kranführerschein" />
+              <option value="Baggerführerschein" />
+              <option value="Motorsägen-Schein" />
+              <option value="Asbest-Sachkunde (TRGS 519)" />
+              <option value="Elektrofachkraft" />
+              <option value="Höhenrettung" />
+              <option value="Brandschutzhelfer" />
+              <option value="Sicherheitsbeauftragter" />
+              <option value="Führerschein Klasse C/CE" />
+              <option value="ADR-Schein (Gefahrgut)" />
+            </datalist>
+            {state?.errors?.name?.[0] && <p className="text-sm text-red-600">{state.errors.name[0]}</p>}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <Input label="Ausgestellt am" name="issued_date" type="date" />
             <Input label="Gültig bis" name="expiry_date" type="date" />
