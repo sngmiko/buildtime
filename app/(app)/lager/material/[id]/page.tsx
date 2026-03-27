@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, AlertTriangle, TrendingUp, TrendingDown, RotateCcw } from 'lucide-react'
 import { MaterialEditForm } from './material-edit-form'
+import { StockMovementForm } from './stock-movement-form'
 import type { Material, Supplier, StockMovement } from '@/lib/types'
 
 const UNIT_LABELS: Record<string, string> = {
@@ -36,7 +37,7 @@ export default async function MaterialDetailPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
 
-  const [{ data: material }, { data: movements }, { data: suppliers }] = await Promise.all([
+  const [{ data: material }, { data: movements }, { data: suppliers }, { data: activeSites }] = await Promise.all([
     supabase.from('materials').select('*, suppliers(name)').eq('id', id).single(),
     supabase
       .from('stock_movements')
@@ -45,6 +46,7 @@ export default async function MaterialDetailPage({
       .order('created_at', { ascending: false })
       .limit(30),
     supabase.from('suppliers').select('id, name').order('name'),
+    supabase.from('construction_sites').select('id, name').eq('status', 'active').order('name'),
   ])
 
   if (!material) notFound()
@@ -112,6 +114,7 @@ export default async function MaterialDetailPage({
 
         {/* Stock movement history */}
         <div className="flex flex-col gap-4">
+          <StockMovementForm materialId={m.id} sites={(activeSites || []) as { id: string; name: string }[]} />
           <h2 className="text-lg font-semibold text-slate-900">Lagerbewegungen</h2>
           {(!movements || movements.length === 0) ? (
             <Card className="py-8 text-center text-sm text-slate-500">

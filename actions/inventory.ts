@@ -143,10 +143,13 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
 
 // ─── Stock Movements ──────────────────────────────────────────────────────────
 
-export async function addStockMovement(prevState: InventoryState, formData: FormData): Promise<InventoryState> {
-  const raw: Record<string, unknown> = {}
-  for (const key of ['material_id', 'site_id', 'type', 'quantity', 'notes']) {
-    raw[key] = formData.get(key) || undefined
+export async function addStockMovement(materialId: string, prevState: InventoryState, formData: FormData): Promise<InventoryState> {
+  const raw: Record<string, unknown> = {
+    material_id: materialId,
+    site_id: formData.get('site_id') || undefined,
+    type: formData.get('type') || undefined,
+    quantity: formData.get('quantity') || undefined,
+    notes: formData.get('notes') || undefined,
   }
   const validated = stockMovementSchema.safeParse(raw)
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
@@ -172,7 +175,7 @@ export async function addStockMovement(prevState: InventoryState, formData: Form
   const { data: material } = await supabase
     .from('materials')
     .select('current_stock')
-    .eq('id', validated.data.material_id)
+    .eq('id', materialId)
     .single()
 
   if (material) {
@@ -180,7 +183,7 @@ export async function addStockMovement(prevState: InventoryState, formData: Form
       ? validated.data.quantity
       : -validated.data.quantity
     const newStock = Math.max(0, (material.current_stock || 0) + delta)
-    await supabase.from('materials').update({ current_stock: newStock }).eq('id', validated.data.material_id)
+    await supabase.from('materials').update({ current_stock: newStock }).eq('id', materialId)
   }
 
   return { success: true, message: 'Lagerbewegung gespeichert' }
