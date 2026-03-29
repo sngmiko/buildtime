@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
-  LayoutDashboard, Users, HardHat, ClipboardList, Truck, Package,
+  LayoutDashboard, Users, HardHat, Truck, Package,
   Briefcase, FileText, CalendarDays, UsersRound, BookOpen, Building2,
   User, Menu, X, Search,
 } from 'lucide-react'
@@ -22,10 +22,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/mitarbeiter', label: 'Mitarbeiter', icon: Users, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/baustellen', label: 'Baustellen', icon: HardHat, roles: ['owner', 'foreman', 'super_admin'] },
-  { href: '/zeitmanagement', label: 'Zeitmanagement', icon: ClipboardList, roles: ['owner', 'foreman', 'super_admin'] },
+  { href: '/disposition', label: 'Disposition', icon: CalendarDays, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/auftraege', label: 'Aufträge', icon: Briefcase, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/rechnungen', label: 'Rechnungen', icon: FileText, roles: ['owner', 'foreman', 'super_admin'] },
-  { href: '/planung', label: 'Disposition', icon: CalendarDays, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/fuhrpark', label: 'Fuhrpark', icon: Truck, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/lager', label: 'Lager & Einkauf', icon: Package, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/subunternehmer', label: 'Subunternehmer', icon: UsersRound, roles: ['owner', 'foreman', 'super_admin'] },
