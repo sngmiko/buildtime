@@ -24,6 +24,9 @@ export async function createSite(prevState: SiteState, formData: FormData): Prom
     budget: formData.get('budget') || undefined,
     site_manager: formData.get('site_manager') || undefined,
     notes: formData.get('notes') || undefined,
+    contact_name: formData.get('contact_name') || undefined,
+    contact_phone: formData.get('contact_phone') || undefined,
+    contact_role: formData.get('contact_role') || undefined,
   }
 
   const validated = siteSchema.safeParse(raw)
@@ -65,6 +68,9 @@ export async function createSite(prevState: SiteState, formData: FormData): Prom
       budget: typeof d.budget === 'number' ? d.budget : null,
       site_manager: d.site_manager || null,
       notes: d.notes || null,
+      contact_name: d.contact_name || null,
+      contact_phone: d.contact_phone || null,
+      contact_role: d.contact_role || null,
     })
 
   if (error) {
@@ -92,6 +98,9 @@ export async function updateSite(
     budget: formData.get('budget') || undefined,
     site_manager: formData.get('site_manager') || undefined,
     notes: formData.get('notes') || undefined,
+    contact_name: formData.get('contact_name') || undefined,
+    contact_phone: formData.get('contact_phone') || undefined,
+    contact_role: formData.get('contact_role') || undefined,
   }
 
   const validated = siteSchema.safeParse(raw)
@@ -131,6 +140,9 @@ export async function updateSite(
       budget: typeof d.budget === 'number' ? d.budget : null,
       site_manager: d.site_manager || null,
       notes: d.notes || null,
+      contact_name: d.contact_name || null,
+      contact_phone: d.contact_phone || null,
+      contact_role: d.contact_role || null,
     })
     .eq('id', siteId)
 

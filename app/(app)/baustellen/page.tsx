@@ -72,12 +72,17 @@ export default async function BaustellenPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Baustellen</h1>
-        <Link href="/baustellen/neu">
-          <Button>
-            <Plus className="h-4 w-4" />
-            Neue Baustelle
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/baustellen/karte">
+            <Button variant="outline"><MapPin className="h-4 w-4" /> Karte</Button>
+          </Link>
+          <Link href="/baustellen/neu">
+            <Button>
+              <Plus className="h-4 w-4" />
+              Neue Baustelle
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {sites && sites.length > 0 && sites.length <= 2 && (

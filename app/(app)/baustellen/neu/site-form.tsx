@@ -34,6 +34,13 @@ export function SiteForm({ foremen }: { foremen: { id: string; name: string }[] 
 
       <Input label="Interne Notizen" name="notes" placeholder="Besonderheiten, Zufahrt, Schlüssel..." />
 
+      <h3 className="mt-2 font-semibold text-slate-900">Ansprechpartner vor Ort</h3>
+      <div className="grid grid-cols-3 gap-3">
+        <Input label="Name" name="contact_name" placeholder="Max Müller" />
+        <Input label="Telefon" name="contact_phone" placeholder="+49 170 1234567" />
+        <Input label="Rolle" name="contact_role" placeholder="Polier" />
+      </div>
+
       {state?.message && <p className={`text-sm ${state.success ? 'text-emerald-600' : 'text-red-600'}`}>{state.message}</p>}
       <Button type="submit" disabled={pending} size="lg" className="w-full">
         {pending ? 'Erstellen...' : 'Baustelle erstellen'}

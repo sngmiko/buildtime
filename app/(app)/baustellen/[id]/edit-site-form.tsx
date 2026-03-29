@@ -36,6 +36,14 @@ export function EditSiteForm({ site, foremen }: { site: ConstructionSite; foreme
         <Input label="E-Mail" name="client_email" type="email" defaultValue={site.client_email || ''} />
       </div>
       <Input label="Notizen" name="notes" defaultValue={site.notes || ''} />
+
+      <h3 className="mt-2 font-semibold text-slate-900">Ansprechpartner vor Ort</h3>
+      <div className="grid grid-cols-3 gap-3">
+        <Input label="Name" name="contact_name" placeholder="Max Müller" defaultValue={site.contact_name || ''} />
+        <Input label="Telefon" name="contact_phone" placeholder="+49 170 1234567" defaultValue={site.contact_phone || ''} />
+        <Input label="Rolle" name="contact_role" placeholder="Polier" defaultValue={site.contact_role || ''} />
+      </div>
+
       {state?.message && <p className={`text-sm ${state.success ? 'text-emerald-600' : 'text-red-600'}`}>{state.message}</p>}
       <Button type="submit" disabled={pending}>{pending ? 'Speichern...' : 'Baustelle speichern'}</Button>
     </form>

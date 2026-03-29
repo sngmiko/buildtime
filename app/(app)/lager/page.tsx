@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TipBanner } from '@/components/ui/tip-banner'
 import { getDismissedTips } from '@/actions/activity'
-import { Plus, Package, AlertTriangle } from 'lucide-react'
-import type { Material, Supplier, PurchaseOrder } from '@/lib/types'
+import { Plus, Package, AlertTriangle, Layers } from 'lucide-react'
+import type { Material, Supplier, PurchaseOrder, MaterialBundle, MaterialBundleItem } from '@/lib/types'
 import { formatNumber, formatCurrency } from '@/lib/format'
 
 const UNIT_LABELS: Record<string, string> = {
@@ -54,11 +54,13 @@ export default async function LagerPage({
     { data: materials },
     { data: suppliers },
     { data: orders },
+    { data: bundles },
     dismissedTips,
   ] = await Promise.all([
     supabase.from('materials').select('*, suppliers(name)').order('name'),
     supabase.from('suppliers').select('*').order('name'),
     supabase.from('purchase_orders').select('*, suppliers(name)').order('order_date', { ascending: false }),
+    supabase.from('material_bundles').select('*, material_bundle_items(id, quantity, materials(name, unit))').order('name'),
     getDismissedTips(),
   ])
 
@@ -115,6 +117,7 @@ export default async function LagerPage({
           { key: 'materialien', label: 'Materialien' },
           { key: 'lieferanten', label: 'Lieferanten' },
           { key: 'bestellungen', label: 'Bestellungen' },
+          { key: 'buendel', label: 'Bündel' },
         ].map(({ key, label }) => (
           <Link
             key={key}
@@ -259,6 +262,60 @@ export default async function LagerPage({
           ))}
           {(!orders || orders.length === 0) && (
             <Card className="py-8 text-center text-sm text-slate-500">Keine Bestellungen vorhanden</Card>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Bündel */}
+      {activeTab === 'buendel' && (
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-end">
+            <Link href="/lager/buendel-neu">
+              <Button><Plus className="h-4 w-4" /> Neues Bündel</Button>
+            </Link>
+          </div>
+          {(!bundles || bundles.length === 0) ? (
+            <EmptyState
+              icon={Layers}
+              title="Materialien als Bündel zusammenfassen"
+              description="Erstellen Sie Bündel aus häufig gemeinsam genutzten Materialien und weisen Sie sie mit einem Klick einer Baustelle zu."
+              actionLabel="Erstes Bündel anlegen"
+              actionHref="/lager/buendel-neu"
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(bundles as (MaterialBundle & { material_bundle_items: (MaterialBundleItem & { materials: { name: string; unit: string } | null })[] })[]).map((b) => (
+                <Card key={b.id} className="flex flex-col gap-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate">{b.name}</h3>
+                      {b.description && (
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">{b.description}</p>
+                      )}
+                    </div>
+                    <span className="ml-2 shrink-0 flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                      <Layers className="h-3 w-3" />
+                      {b.material_bundle_items.length} Pos.
+                    </span>
+                  </div>
+                  {b.material_bundle_items.length > 0 && (
+                    <ul className="space-y-1">
+                      {b.material_bundle_items.slice(0, 4).map((item) => (
+                        <li key={item.id} className="flex items-center justify-between text-xs text-slate-600">
+                          <span className="truncate">{item.materials?.name || '—'}</span>
+                          <span className="ml-2 shrink-0 text-slate-400">
+                            {item.quantity} {item.materials?.unit ? UNIT_LABELS[item.materials.unit] || item.materials.unit : ''}
+                          </span>
+                        </li>
+                      ))}
+                      {b.material_bundle_items.length > 4 && (
+                        <li className="text-xs text-slate-400">+{b.material_bundle_items.length - 4} weitere</li>
+                      )}
+                    </ul>
+                  )}
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       )}
