@@ -586,3 +586,17 @@ export type DiaryDocument = {
   uploaded_by: string | null
   created_at: string
 }
+
+export type Reminder = {
+  id: string
+  company_id: string
+  user_id: string | null
+  type: 'clock_in' | 'document_expiry' | 'custom'
+  message: string
+  scheduled_for: string
+  sent_at: string | null
+  channel: 'in_app' | 'whatsapp' | 'email'
+  status: 'pending' | 'sent' | 'failed'
+  created_by: string | null
+  created_at: string
+}
