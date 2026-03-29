@@ -2,14 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/empty-state'
-import { formatCurrency, formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format'
 import {
-  Briefcase, Users, Clock, HardHat, AlertTriangle, TrendingUp, TrendingDown,
-  Truck, Package, CheckCircle, ArrowRight, UserPlus, FileText, Activity,
+  Briefcase, Users, Clock, HardHat, AlertTriangle,
+  CheckCircle, ArrowRight, UserPlus, FileText, Activity,
 } from 'lucide-react'
-import type { Profile, OnboardingProgress } from '@/lib/types'
+import type { OnboardingProgress } from '@/lib/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -27,54 +25,26 @@ export default async function DashboardPage() {
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
-  const weekStart = new Date()
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  weekStart.setHours(0, 0, 0, 0)
-  const monthStart = new Date()
-  monthStart.setDate(1)
-  monthStart.setHours(0, 0, 0, 0)
-  const lastMonthStart = new Date(monthStart)
-  lastMonthStart.setMonth(lastMonthStart.getMonth() - 1)
 
-  // Parallel data fetch
+  // 8 essential queries
   const [
     { count: totalWorkers },
     { data: todayEntries },
-    { data: weekEntries },
     { count: activeSites },
     { data: activeOrders },
-    { count: pendingLeave },
     { data: clockedIn },
     { data: onboarding },
     { data: activities },
-    { data: expiringQuals },
-    { data: vehicleInspections },
-    { data: lowStockMaterials },
-    { data: overBudgetOrders },
-    { data: overdueInvoices },
-    { data: allProfiles },
-    { data: sickToday },
-    { data: leaveToday },
-    { data: vehicles },
+    { count: overdueInvoiceCount },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'worker'),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['worker', 'foreman']),
     supabase.from('time_entries').select('clock_in, clock_out, break_minutes').gte('clock_in', todayStart.toISOString()),
-    supabase.from('time_entries').select('clock_in, clock_out, break_minutes').gte('clock_in', weekStart.toISOString()),
     supabase.from('construction_sites').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('orders').select('id, title, budget, status').in('status', ['in_progress', 'commissioned']),
-    supabase.from('leave_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('time_entries').select('user_id, clock_in, site_id, profiles(first_name, last_name), construction_sites(name)').is('clock_out', null),
     supabase.from('onboarding_progress').select('*').eq('company_id', profile.company_id).maybeSingle(),
-    supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(15),
-    supabase.from('qualifications').select('name, expiry_date, profiles(first_name, last_name)').lte('expiry_date', new Date(Date.now() + 30 * 86400000).toISOString()).gte('expiry_date', new Date().toISOString()),
-    supabase.from('vehicles').select('license_plate, make, model, next_inspection').lte('next_inspection', new Date(Date.now() + 30 * 86400000).toISOString()).gte('next_inspection', new Date().toISOString()),
-    supabase.from('materials').select('name, current_stock, min_stock').not('min_stock', 'is', null),
-    supabase.from('orders').select('id, title, budget').in('status', ['in_progress', 'commissioned']).not('budget', 'is', null),
-    supabase.from('invoices').select('id, invoice_number, total, due_date').eq('status', 'sent').lte('due_date', new Date().toISOString()),
-    supabase.from('profiles').select('id, role'),
-    supabase.from('sick_days').select('user_id').gte('start_date', todayStart.toISOString().split('T')[0]).lte('end_date', todayStart.toISOString().split('T')[0]),
-    supabase.from('leave_requests').select('user_id').eq('status', 'approved').lte('start_date', todayStart.toISOString().split('T')[0]).gte('end_date', todayStart.toISOString().split('T')[0]),
-    supabase.from('vehicles').select('id, status'),
+    supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(10),
+    supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('status', 'sent').lte('due_date', new Date().toISOString()),
   ])
 
   // Calculate stats
@@ -83,25 +53,8 @@ export default async function DashboardPage() {
     return s + Math.max(0, (new Date(e.clock_out).getTime() - new Date(e.clock_in).getTime()) / 3600000 - e.break_minutes / 60)
   }, 0)
 
-  const weekHours = (weekEntries || []).reduce((s: number, e: { clock_in: string; clock_out: string | null; break_minutes: number }) => {
-    if (!e.clock_out) return s
-    return s + Math.max(0, (new Date(e.clock_out).getTime() - new Date(e.clock_in).getTime()) / 3600000 - e.break_minutes / 60)
-  }, 0)
-
   const clockedInCount = (clockedIn || []).length
   const totalWorkersNum = totalWorkers || 0
-  const sickCount = (sickToday || []).length
-  const leaveCount = (leaveToday || []).length
-  const activeToday = clockedInCount
-  const utilizationPct = totalWorkersNum > 0 ? Math.round((activeToday / totalWorkersNum) * 100) : 0
-
-  const lowStock = (lowStockMaterials || []).filter((m: { current_stock: number; min_stock: number }) =>
-    m.current_stock != null && m.min_stock != null && m.current_stock < m.min_stock
-  )
-
-  const vehiclesInUse = (vehicles || []).filter((v: { status: string }) => v.status === 'in_use').length
-  const vehicleTotal = (vehicles || []).length
-  const vehicleTuvCount = (vehicleInspections || []).length
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend'
@@ -111,11 +64,7 @@ export default async function DashboardPage() {
 
   // Warnings
   const warnings: { type: 'critical' | 'warning' | 'info'; text: string; href: string }[] = []
-  if ((expiringQuals || []).length > 0) warnings.push({ type: 'warning', text: `${(expiringQuals || []).length} Qualifikation(en) laufen in 30 Tagen ab`, href: '/mitarbeiter' })
-  if (vehicleTuvCount > 0) warnings.push({ type: 'warning', text: `${vehicleTuvCount} Fahrzeug(e) mit fälligem TÜV`, href: '/fuhrpark' })
-  if (lowStock.length > 0) warnings.push({ type: 'warning', text: `${lowStock.length} Material(ien) unter Mindestbestand`, href: '/lager' })
-  if ((pendingLeave || 0) > 0) warnings.push({ type: 'info', text: `${pendingLeave} offene Urlaubsanträge`, href: '/mitarbeiter' })
-  if ((overdueInvoices || []).length > 0) warnings.push({ type: 'critical', text: `${(overdueInvoices || []).length} überfällige Rechnung(en)`, href: '/rechnungen' })
+  if ((overdueInvoiceCount || 0) > 0) warnings.push({ type: 'critical', text: `${overdueInvoiceCount} überfällige Rechnung(en)`, href: '/rechnungen' })
 
   // Onboarding
   const ob = onboarding as OnboardingProgress | null
@@ -190,7 +139,7 @@ export default async function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: KPIs (2/3 width) */}
         <div className="flex flex-col gap-6 lg:col-span-2">
-          {/* KPI Cards with context */}
+          {/* KPI Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Mitarbeiter */}
             <Card className="p-5">
@@ -199,12 +148,8 @@ export default async function DashboardPage() {
               </div>
               <p className="mt-3 text-2xl font-bold text-slate-900">{formatNumber(totalWorkersNum)} Mitarbeiter</p>
               <p className="mt-1 text-xs text-slate-500">
-                {activeToday} heute aktiv{sickCount > 0 && `, ${sickCount} krank`}{leaveCount > 0 && `, ${leaveCount} Urlaub`}
+                {clockedInCount} heute aktiv
               </p>
-              <div className="mt-2 h-1.5 rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${utilizationPct}%` }} />
-              </div>
-              <p className="mt-1 text-[10px] text-slate-400">{utilizationPct}% Auslastung</p>
             </Card>
 
             {/* Stunden */}
@@ -213,7 +158,6 @@ export default async function DashboardPage() {
                 <Clock className="h-5 w-5 text-emerald-600" />
               </div>
               <p className="mt-3 text-2xl font-bold text-slate-900">{formatNumber(todayHours, 1)}h heute</p>
-              <p className="mt-1 text-xs text-slate-500">{formatNumber(weekHours, 1)}h diese Woche</p>
               {clockedInCount > 0 && (
                 <p className="mt-1 text-xs text-emerald-600 font-medium">{clockedInCount} gerade eingestempelt</p>
               )}
@@ -228,27 +172,22 @@ export default async function DashboardPage() {
               <p className="mt-1 text-xs text-slate-500">{activeSites || 0} aktive Baustellen</p>
             </Card>
 
-            {/* Fahrzeuge */}
+            {/* Eingestempelt */}
             <Card className="p-5">
               <div className="flex items-center justify-between">
-                <Truck className="h-5 w-5 text-blue-600" />
+                <Clock className="h-5 w-5 text-emerald-500" />
               </div>
-              <p className="mt-3 text-2xl font-bold text-slate-900">{vehicleTotal} Fahrzeuge</p>
-              <p className="mt-1 text-xs text-slate-500">
-                {vehiclesInUse} im Einsatz
-                {vehicleTuvCount > 0 && <span className="text-amber-600">, {vehicleTuvCount} TÜV fällig</span>}
-              </p>
+              <p className="mt-3 text-2xl font-bold text-slate-900">{clockedInCount} eingestempelt</p>
+              <p className="mt-1 text-xs text-slate-500">gerade aktiv</p>
             </Card>
 
-            {/* Material */}
+            {/* Baustellen */}
             <Card className="p-5">
               <div className="flex items-center justify-between">
-                <Package className="h-5 w-5 text-teal-600" />
+                <HardHat className="h-5 w-5 text-blue-600" />
               </div>
-              <p className="mt-3 text-2xl font-bold text-slate-900">{lowStock.length === 0 ? 'Bestand OK' : `${lowStock.length} niedrig`}</p>
-              <p className="mt-1 text-xs text-slate-500">
-                {lowStock.length === 0 ? 'Alle Materialien über Mindestbestand' : 'Material unter Mindestbestand'}
-              </p>
+              <p className="mt-3 text-2xl font-bold text-slate-900">{activeSites || 0} Baustellen</p>
+              <p className="mt-1 text-xs text-slate-500">aktiv</p>
             </Card>
 
             {/* Rechnungen */}
@@ -257,10 +196,10 @@ export default async function DashboardPage() {
                 <FileText className="h-5 w-5 text-violet-600" />
               </div>
               <p className="mt-3 text-2xl font-bold text-slate-900">
-                {(overdueInvoices || []).length === 0 ? 'Keine fällig' : `${(overdueInvoices || []).length} überfällig`}
+                {(overdueInvoiceCount || 0) === 0 ? 'Keine fällig' : `${overdueInvoiceCount} überfällig`}
               </p>
-              <p className={`mt-1 text-xs ${(overdueInvoices || []).length > 0 ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
-                {(overdueInvoices || []).length > 0 ? 'Zahlungen ausstehend' : 'Alle Rechnungen bezahlt oder offen'}
+              <p className={`mt-1 text-xs ${(overdueInvoiceCount || 0) > 0 ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
+                {(overdueInvoiceCount || 0) > 0 ? 'Zahlungen ausstehend' : 'Alle Rechnungen bezahlt oder offen'}
               </p>
             </Card>
           </div>

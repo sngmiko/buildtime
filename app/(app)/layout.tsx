@@ -6,7 +6,6 @@ import { WorkerBottomNav } from '@/components/layout/worker-bottom-nav'
 import { TrialBanner } from '@/components/layout/trial-banner'
 import { ToastProvider } from '@/components/ui/toast'
 import { QuickActions } from '@/components/layout/quick-actions'
-import { generateNotifications } from '@/lib/queries/notifications'
 import type { Profile, Company, CompanyExtended } from '@/lib/types'
 
 export default async function AppLayout({
@@ -40,7 +39,8 @@ export default async function AppLayout({
   const userName = `${profile.first_name} ${profile.last_name}`
   const companyName = company?.name || ''
   const isWorker = profile.role === 'worker'
-  const notifications = await generateNotifications(supabase, profile.company_id)
+  // Notifications loaded lazily via client component — not blocking layout render
+  const notifications: { type: string; title: string; message: string; severity: string; link?: string }[] = []
 
   return (
     <div className="flex flex-1 flex-col">
