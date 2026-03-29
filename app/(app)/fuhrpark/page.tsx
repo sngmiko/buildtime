@@ -114,6 +114,9 @@ export default async function FuhrparkPage({
         <Link href="?tab=equipment" className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'equipment' ? 'bg-[#1e3a5f] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
           <Wrench className="h-4 w-4" /> Maschinen
         </Link>
+        <Link href="/fuhrpark/werkstatt" className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <Wrench className="h-4 w-4" /> Werkstatt
+        </Link>
       </div>
 
       {activeTab === 'vehicles' && (
