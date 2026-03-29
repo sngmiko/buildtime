@@ -554,3 +554,32 @@ export type WorkshopEntry = {
   created_at: string
   updated_at: string
 }
+
+export type MaterialBundle = {
+  id: string
+  company_id: string
+  name: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MaterialBundleItem = {
+  id: string
+  bundle_id: string
+  material_id: string
+  quantity: number
+  created_at: string
+}
+
+export type DiaryDocument = {
+  id: string
+  company_id: string
+  site_id: string | null
+  diary_entry_id: string | null
+  file_url: string
+  file_name: string
+  file_size: number | null
+  uploaded_by: string | null
+  created_at: string
+}
