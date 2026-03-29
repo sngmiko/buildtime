@@ -530,3 +530,27 @@ export type ActivityLog = {
   details: Record<string, unknown> | null
   created_at: string
 }
+
+export type WorkshopReason = 'repair' | 'maintenance' | 'tuev' | 'inspection' | 'accident'
+export type WorkshopStatus = 'received' | 'in_repair' | 'done' | 'picked_up'
+
+export type WorkshopEntry = {
+  id: string
+  company_id: string
+  entity_type: 'vehicle' | 'machine'
+  entity_id: string
+  reason: WorkshopReason
+  description: string | null
+  workshop_name: string | null
+  entered_at: string
+  expected_completion: string | null
+  completed_at: string | null
+  status: WorkshopStatus
+  cost_parts: number
+  cost_labor: number
+  cost_external: number
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
