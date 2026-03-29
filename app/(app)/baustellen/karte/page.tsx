@@ -18,9 +18,14 @@ export default async function BaustellenKartePage() {
     id: s.id, name: s.name, address: s.address, lat: s.latitude, lng: s.longitude, workerCount: 0,
   }))
 
-  const workerMarkers = (clockedIn || []).filter((e: { clock_in_lat: number | null }) => e.clock_in_lat).map((e: { user_id: string; clock_in: string; clock_in_lat: number; clock_in_lng: number; profiles: { first_name: string; last_name: string } | null; construction_sites: { name: string } | null }) => ({
-    id: e.user_id, name: `${e.profiles?.first_name} ${e.profiles?.last_name}`, site: e.construction_sites?.name || '', since: new Date(e.clock_in).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }), lat: e.clock_in_lat, lng: e.clock_in_lng,
-  }))
+  type ClockInEntry = { user_id: string; clock_in: string; clock_in_lat: number | null; clock_in_lng: number; profiles: { first_name: string; last_name: string }[] | null; construction_sites: { name: string }[] | null }
+  const workerMarkers = (clockedIn || []).filter((e: { clock_in_lat: number | null }) => e.clock_in_lat).map((e: ClockInEntry) => {
+    const profile = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles
+    const site = Array.isArray(e.construction_sites) ? e.construction_sites[0] : e.construction_sites
+    return {
+      id: e.user_id, name: `${profile?.first_name} ${profile?.last_name}`, site: site?.name || '', since: new Date(e.clock_in).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }), lat: e.clock_in_lat as number, lng: e.clock_in_lng,
+    }
+  })
 
   return (
     <div className="flex flex-col gap-6">
