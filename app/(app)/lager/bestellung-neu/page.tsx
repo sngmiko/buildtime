@@ -11,7 +11,7 @@ export default async function BestellungNeuPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/stempeln')
 
   const [{ data: suppliers }, { data: activeOrders }] = await Promise.all([
     supabase.from('suppliers').select('id, name').order('name'),

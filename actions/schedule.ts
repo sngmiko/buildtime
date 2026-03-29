@@ -26,7 +26,7 @@ export async function createScheduleEntry(prevState: ScheduleState, formData: Fo
   if (!user) return { message: 'Nicht angemeldet' }
 
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('schedule_entries').insert({
     company_id: profile.company_id,

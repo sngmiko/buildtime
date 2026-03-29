@@ -62,7 +62,7 @@ export async function updateEmployeeDetails(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -114,7 +114,7 @@ export async function addQualification(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -171,7 +171,7 @@ export async function addBriefing(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -248,7 +248,7 @@ export async function approveLeaveRequest(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -295,7 +295,7 @@ export async function addSickDay(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -375,7 +375,7 @@ export async function createEmployee(
     .eq('id', user.id)
     .single()
 
-  if (!myProfile || !['owner', 'foreman'].includes(myProfile.role)) {
+  if (!myProfile || !['owner', 'foreman', 'super_admin'].includes(myProfile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 

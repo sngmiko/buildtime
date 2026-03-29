@@ -33,7 +33,7 @@ export default async function PlanungPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, company_id').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/stempeln')
 
   const monday = getMondayOfWeek(weekOffset)
   const weekDates: string[] = Array.from({ length: 7 }, (_, i) => {

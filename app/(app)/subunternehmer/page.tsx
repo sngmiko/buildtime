@@ -33,7 +33,7 @@ export default async function SubunternehmerPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/stempeln')
 
   const [{ data: subs }, { data: assignments }, dismissedTips] = await Promise.all([
     supabase.from('subcontractors').select('*').order('name'),

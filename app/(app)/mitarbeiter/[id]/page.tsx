@@ -39,7 +39,7 @@ export default async function EmployeeDetailPage({
     .eq('id', user.id)
     .single()
 
-  if (!currentProfile || !['owner', 'foreman'].includes(currentProfile.role)) {
+  if (!currentProfile || !['owner', 'foreman', 'super_admin'].includes(currentProfile.role)) {
     redirect('/dashboard')
   }
 

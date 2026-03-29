@@ -27,7 +27,7 @@ export default async function RechnungDruckPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role, company_id').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/login')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/login')
 
   const [{ data: invoice }, { data: items }, { data: company }] = await Promise.all([
     supabase.from('invoices').select('*, customers(name, address, contact_person)').eq('id', id).single<InvoiceWithCustomer>(),

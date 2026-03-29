@@ -32,7 +32,7 @@ export default async function ZeitmanagementPage({
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     redirect('/stempeln')
   }
 

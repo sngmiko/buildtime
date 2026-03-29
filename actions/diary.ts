@@ -35,7 +35,7 @@ export async function createDiaryEntry(prevState: DiaryState, formData: FormData
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, user, profile } = await getAuthProfile()
-  if (!profile || !user || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !user || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = {
     company_id: profile.company_id,
@@ -66,7 +66,7 @@ export async function updateDiaryEntry(entryId: string, prevState: DiaryState, f
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }

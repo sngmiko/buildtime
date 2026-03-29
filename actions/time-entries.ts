@@ -132,7 +132,7 @@ export async function updateEntry(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -168,7 +168,7 @@ export async function deleteEntry(entryId: string): Promise<TimeEntryState> {
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 

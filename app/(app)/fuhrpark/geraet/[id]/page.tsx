@@ -22,7 +22,7 @@ export default async function EquipmentDetailPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/dashboard')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/dashboard')
 
   const [{ data: equipment }, { data: costs }, { data: sites }] = await Promise.all([
     supabase.from('equipment').select('*, construction_sites(name)').eq('id', id).single(),

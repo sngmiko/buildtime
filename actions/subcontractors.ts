@@ -35,7 +35,7 @@ export async function createSubcontractor(prevState: SubcontractorsState, formDa
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -54,7 +54,7 @@ export async function updateSubcontractor(subId: string, prevState: Subcontracto
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -78,7 +78,7 @@ export async function createAssignment(subId: string, prevState: SubcontractorsS
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -90,7 +90,7 @@ export async function createAssignment(subId: string, prevState: SubcontractorsS
 
 export async function updateAssignment(assignmentId: string, status: 'active' | 'completed' | 'cancelled'): Promise<SubcontractorsState> {
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('subcontractor_assignments').update({ status }).eq('id', assignmentId)
   if (error) return { message: 'Status konnte nicht aktualisiert werden' }

@@ -28,7 +28,7 @@ export async function createInvoice(prevState: InvoiceState, formData: FormData)
   if (!user) return { message: 'Nicht angemeldet' }
 
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   // Get next invoice number
   const { data: company } = await supabase.from('companies').select('invoice_prefix, next_invoice_number').eq('id', profile.company_id).single()
@@ -68,7 +68,7 @@ export async function createInvoiceFromOrder(orderId: string): Promise<InvoiceSt
   if (!user) return { message: 'Nicht angemeldet' }
 
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   // Get order with items and customer
   const { data: order } = await supabase.from('orders').select('*, customers(id)').eq('id', orderId).single()

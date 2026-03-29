@@ -42,7 +42,7 @@ export async function createSite(prevState: SiteState, formData: FormData): Prom
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 
@@ -110,7 +110,7 @@ export async function updateSite(
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) {
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) {
     return { message: 'Keine Berechtigung' }
   }
 

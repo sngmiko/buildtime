@@ -23,7 +23,7 @@ export default async function BautagebuchPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/stempeln')
 
   const [{ data: sites }, { data: entries }, dismissedTips] = await Promise.all([
     supabase.from('construction_sites').select('id, name').order('name'),

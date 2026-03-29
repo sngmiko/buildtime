@@ -23,7 +23,7 @@ export default async function SupplierDetailPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/stempeln')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/stempeln')
 
   const [{ data: supplier }, { data: materials }] = await Promise.all([
     supabase.from('suppliers').select('*').eq('id', id).single(),

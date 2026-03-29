@@ -24,7 +24,7 @@ export async function createSupplier(prevState: InventoryState, formData: FormDa
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { message: 'Nicht angemeldet' }
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -68,7 +68,7 @@ export async function createMaterial(prevState: InventoryState, formData: FormDa
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { message: 'Nicht angemeldet' }
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -112,7 +112,7 @@ export async function createOrder(prevState: InventoryState, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { message: 'Nicht angemeldet' }
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = {
     company_id: profile.company_id,
@@ -135,7 +135,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { message: 'Nicht angemeldet' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('purchase_orders').update({ status }).eq('id', orderId)
   if (error) return { message: 'Status konnte nicht aktualisiert werden' }
@@ -161,7 +161,7 @@ export async function addStockMovement(materialId: string, prevState: InventoryS
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { message: 'Nicht angemeldet' }
   const { data: profile } = await supabase.from('profiles').select('company_id, role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = {
     company_id: profile.company_id,

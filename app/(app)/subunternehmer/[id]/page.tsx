@@ -15,7 +15,7 @@ export default async function SubDetailPage({ params }: { params: Promise<{ id: 
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) redirect('/dashboard')
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) redirect('/dashboard')
 
   const [{ data: sub }, { data: assignments }, { data: orders }] = await Promise.all([
     supabase.from('subcontractors').select('*').eq('id', id).single(),

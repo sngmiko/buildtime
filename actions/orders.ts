@@ -36,7 +36,7 @@ export async function createCustomer(prevState: OrdersState, formData: FormData)
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -55,7 +55,7 @@ export async function updateCustomer(customerId: string, prevState: OrdersState,
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -76,7 +76,7 @@ export async function createOrder(prevState: OrdersState, formData: FormData): P
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { company_id: profile.company_id, ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -95,7 +95,7 @@ export async function updateOrder(orderId: string, prevState: OrdersState, formD
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const d: Record<string, unknown> = { ...validated.data }
   for (const k of Object.keys(d)) { if (d[k] === '' || d[k] === undefined) d[k] = null }
@@ -107,7 +107,7 @@ export async function updateOrder(orderId: string, prevState: OrdersState, formD
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrdersState> {
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('orders').update({ status }).eq('id', orderId)
   if (error) return { message: 'Status konnte nicht aktualisiert werden' }
@@ -125,7 +125,7 @@ export async function addOrderItem(orderId: string, prevState: OrdersState, form
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('order_items').insert({ order_id: orderId, ...validated.data })
   if (error) return { message: 'Position konnte nicht hinzugefügt werden' }
@@ -134,7 +134,7 @@ export async function addOrderItem(orderId: string, prevState: OrdersState, form
 
 export async function deleteOrderItem(itemId: string): Promise<OrdersState> {
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase.from('order_items').delete().eq('id', itemId)
   if (error) return { message: 'Position konnte nicht gelöscht werden' }
@@ -152,7 +152,7 @@ export async function addOrderCost(orderId: string, prevState: OrdersState, form
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors }
 
   const { supabase, profile } = await getAuthProfile()
-  if (!profile || !['owner', 'foreman'].includes(profile.role)) return { message: 'Keine Berechtigung' }
+  if (!profile || !['owner', 'foreman', 'super_admin'].includes(profile.role)) return { message: 'Keine Berechtigung' }
 
   const { error } = await supabase
     .from('order_costs')
