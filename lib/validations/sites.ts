@@ -13,6 +13,9 @@ export const siteSchema = z.object({
   budget: z.coerce.number().min(0).optional().or(z.literal('')),
   site_manager: z.string().optional().or(z.literal('')),
   notes: z.string().max(2000).optional().or(z.literal('')),
+  contact_name: z.string().max(200).optional().or(z.literal('')),
+  contact_phone: z.string().max(30).optional().or(z.literal('')),
+  contact_role: z.string().max(100).optional().or(z.literal('')),
 })
 
 export type SiteInput = z.infer<typeof siteSchema>

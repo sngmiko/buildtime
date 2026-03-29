@@ -57,6 +57,9 @@ export type ConstructionSite = {
   notes: string | null
   latitude: number | null
   longitude: number | null
+  contact_name: string | null
+  contact_phone: string | null
+  contact_role: string | null
 }
 
 export type TimeEntry = {
