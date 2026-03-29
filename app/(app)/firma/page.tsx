@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { CompanyForm } from './company-form'
 import type { Profile, Company } from '@/lib/types'
 
@@ -34,6 +36,11 @@ export default async function FirmaPage() {
       <Card className="max-w-lg">
         <CompanyForm company={company} />
       </Card>
+      <div className="flex gap-4">
+        <Link href="/firma/soka-bau"><Button variant="outline">SOKA-BAU Übersicht</Button></Link>
+        <Link href="/firma/export"><Button variant="outline">Steuerberater-Export</Button></Link>
+        <Link href="/firma/abo"><Button variant="outline">Abo & Preise</Button></Link>
+      </div>
     </div>
   )
 }
