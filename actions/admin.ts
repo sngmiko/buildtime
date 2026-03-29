@@ -94,12 +94,19 @@ export async function adminUpdateCompany(companyId: string, prevState: AdminStat
   const maxEmployees = ({ trial: 5, starter: 10, business: 30, enterprise: 100 } as Record<string, number>)[plan] || 5
   const monthlyPrice = ({ trial: 0, starter: 49, business: 99, enterprise: 199 } as Record<string, number>)[plan] || 0
 
+  const logoUrl = formData.get('logo_url') as string | null
+  const primaryColor = formData.get('primary_color') as string | null
+  const secondaryColor = formData.get('secondary_color') as string | null
+
   const { error } = await admin.from('companies').update({
     name: formData.get('name'),
     plan,
     max_employees: maxEmployees,
     monthly_price: monthlyPrice,
     is_active: formData.get('is_active') === 'true',
+    logo_url: logoUrl || null,
+    primary_color: primaryColor || null,
+    secondary_color: secondaryColor || null,
   }).eq('id', companyId)
 
   if (error) return { message: 'Aktualisierung fehlgeschlagen' }

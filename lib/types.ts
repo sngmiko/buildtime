@@ -415,6 +415,8 @@ export type CompanyExtended = Company & {
   monthly_price: number
   is_active: boolean
   logo_url: string | null
+  primary_color: string | null
+  secondary_color: string | null
   onboarding_completed: boolean
   onboarding_step: number
 }
