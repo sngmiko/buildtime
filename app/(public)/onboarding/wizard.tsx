@@ -87,7 +87,7 @@ function Step2() {
   return (
     <Card>
       <h2 className="mb-4 text-xl font-bold text-slate-900">Wie groß ist Ihr Team?</h2>
-      <p className="mb-6 text-sm text-slate-500">Damit wir BuildTime optimal für Sie einrichten können.</p>
+      <p className="mb-6 text-sm text-slate-500">Damit wir NomadWorks optimal für Sie einrichten können.</p>
       <form action={action} className="flex flex-col gap-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
@@ -115,8 +115,8 @@ function Step3() {
 
   const modules = [
     { id: 'time', label: 'Zeiterfassung', desc: 'GPS-verifizierte Stempeluhr' },
-    { id: 'sites', label: 'Baustellendoku', desc: 'Bautagebuch & Fortschritt' },
-    { id: 'fleet', label: 'Fuhrpark', desc: 'Fahrzeuge & Geräte' },
+    { id: 'sites', label: 'Baustellendoku', desc: 'Bautagesbericht & Fortschritt' },
+    { id: 'fleet', label: 'Fuhrpark', desc: 'Fahrzeuge & Maschinen' },
     { id: 'inventory', label: 'Material & Lager', desc: 'Bestand & Bestellungen' },
     { id: 'orders', label: 'Auftragsverwaltung', desc: 'Angebote & Kostentracker' },
     { id: 'subs', label: 'Subunternehmer', desc: 'Nachunternehmer verwalten' },

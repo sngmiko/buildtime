@@ -25,7 +25,7 @@ export function EquipmentForm() {
       <Input label="Nächste Wartung" name="next_maintenance" type="date" />
       <Input label="Notizen" name="notes" />
       {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
-      <Button type="submit" disabled={pending}>{pending ? 'Erstellen...' : 'Gerät erstellen'}</Button>
+      <Button type="submit" disabled={pending}>{pending ? 'Erstellen...' : 'Maschine erstellen'}</Button>
     </form>
   )
 }

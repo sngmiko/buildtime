@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-700 bg-slate-900 px-6">
         <div className="flex items-center gap-3">
           <Shield className="h-5 w-5 text-amber-400" />
-          <span className="text-lg font-bold text-white">BuildTime</span>
+          <span className="text-lg font-bold text-white">NomadWorks</span>
           <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">Admin</span>
         </div>
         <div className="flex items-center gap-4 text-sm">

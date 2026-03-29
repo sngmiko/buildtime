@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'BuildTime — Zeiterfassung für die Baustelle',
-  description: 'Digitale Zeiterfassung, Baustellenverwaltung und ERP-Light für Bauunternehmer in Deutschland.',
+  title: 'NomadWorks — Bau-ERP für moderne Bauunternehmen',
+  description: 'Digitales Bau-ERP: Zeiterfassung, Baustellenverwaltung, Aufträge und mehr für Bauunternehmer in Deutschland.',
 }
 
 export default function RootLayout({

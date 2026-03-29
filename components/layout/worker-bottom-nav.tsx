@@ -37,7 +37,7 @@ export function WorkerBottomNav() {
         })}
       </nav>
       <div className="bg-white pb-[env(safe-area-inset-bottom)] text-center text-[10px] text-slate-300">
-        by Nomad Solutions
+        NomadWorks by Nomad Solutions
       </div>
     </div>
   )

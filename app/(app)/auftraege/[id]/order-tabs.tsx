@@ -265,13 +265,13 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
 
           {/* Equipment */}
           <CollapsibleSection
-            title="Geräte (Gerätepark)"
+            title="Maschinen (Maschinenpark)"
             total={f.equipment.total}
             count={f.equipment.entries.length}
             colorClass="text-violet-600"
           >
             {f.equipment.entries.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-slate-400">Keine Geräte zugewiesen</p>
+              <p className="px-4 py-3 text-sm text-slate-400">Keine Maschinen zugewiesen</p>
             ) : (
               f.equipment.entries.map((e, i) => (
                 <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
@@ -284,7 +284,7 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
               ))
             )}
             <div className="flex justify-between px-4 py-2 text-sm font-semibold bg-slate-50">
-              <span>{f.equipment.entries.reduce((s, e) => s + e.days, 0)} Gerätetage</span>
+              <span>{f.equipment.entries.reduce((s, e) => s + e.days, 0)} Maschinentage</span>
               <span className="text-violet-600">{fmt(f.equipment.total)}</span>
             </div>
           </CollapsibleSection>
@@ -398,7 +398,7 @@ function CostsTab({ details, costBreakdown, workers }: { details: OrderDetails; 
             <select name="category" className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm">
               <option value="material">Material</option>
               <option value="subcontractor">Subunternehmer</option>
-              <option value="equipment">Gerät</option>
+              <option value="equipment">Maschine</option>
               <option value="vehicle">Fahrzeug</option>
               <option value="other">Sonstiges</option>
             </select>
@@ -509,7 +509,7 @@ function NachkalkulationTab({ details, costBreakdown }: { details: OrderDetails;
   const categories: { label: string; total: number; count: number; colorClass: string }[] = [
     { label: 'Personalkosten', total: f.labor.total, count: f.labor.entries.length, colorClass: 'text-blue-600' },
     { label: 'Materialkosten', total: f.materials.total, count: f.materials.entries.length, colorClass: 'text-emerald-600' },
-    { label: 'Gerätekosten', total: f.equipment.total, count: f.equipment.entries.length, colorClass: 'text-violet-600' },
+    { label: 'Maschinenkosten', total: f.equipment.total, count: f.equipment.entries.length, colorClass: 'text-violet-600' },
     { label: 'Fahrzeugkosten', total: f.vehicles.total, count: f.vehicles.entries.length, colorClass: 'text-orange-600' },
     { label: 'Subunternehmer', total: f.subcontractors.total, count: f.subcontractors.entries.length, colorClass: 'text-rose-600' },
     { label: 'Sonstige Kosten', total: f.other.total, count: f.other.entries.length, colorClass: 'text-slate-600' },
@@ -599,9 +599,9 @@ function NachkalkulationTab({ details, costBreakdown }: { details: OrderDetails;
           )}
         </CollapsibleSection>
 
-        <CollapsibleSection title="Gerätekosten (Gerätepark)" total={f.equipment.total} count={f.equipment.entries.length} colorClass="text-violet-600">
+        <CollapsibleSection title="Maschinenkosten (Maschinenpark)" total={f.equipment.total} count={f.equipment.entries.length} colorClass="text-violet-600">
           {f.equipment.entries.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-slate-400">Keine Geräte zugewiesen</p>
+            <p className="px-4 py-3 text-sm text-slate-400">Keine Maschinen zugewiesen</p>
           ) : (
             f.equipment.entries.map((e, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
@@ -707,7 +707,7 @@ function DiaryTab({ details }: { details: OrderDetails }) {
   return (
     <div className="flex flex-col gap-4">
       {details.diaryEntries.length === 0 ? (
-        <Card className="py-8 text-center text-sm text-slate-500">Keine Bautagebuch-Einträge für diesen Auftrag</Card>
+        <Card className="py-8 text-center text-sm text-slate-500">Keine Bautagesbericht-Einträge für diesen Auftrag</Card>
       ) : (
         details.diaryEntries.map((entry) => (
           <Card key={entry.id as string}>
@@ -762,7 +762,7 @@ function TeamTab({ details, workers }: { details: OrderDetails; workers: { id: s
       </Card>
 
       <Card>
-        <h3 className="mb-3 text-lg font-semibold text-slate-900">Geräte ({equipmentAssignments.length})</h3>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Maschinen ({equipmentAssignments.length})</h3>
         {equipmentAssignments.length === 0 ? <p className="text-sm text-slate-500">Keine zugewiesen</p> : (
           <div className="space-y-2">
             {equipmentAssignments.map(a => (

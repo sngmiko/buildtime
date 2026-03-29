@@ -28,7 +28,7 @@ export default async function BautagebuchNeuPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Neuer Tagebucheintrag</h1>
-          <p className="text-sm text-slate-500">Bautagebucheintrag erfassen</p>
+          <p className="text-sm text-slate-500">Bautagesbericht erfassen</p>
         </div>
       </div>
 

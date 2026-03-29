@@ -31,7 +31,7 @@ export function EquipmentEditForm({ equipment, sites }: { equipment: Equipment; 
       <Input label="Nächste Wartung" name="next_maintenance" type="date" defaultValue={equipment.next_maintenance || ''} />
       <Input label="Notizen" name="notes" defaultValue={equipment.notes || ''} />
       {state?.message && <p className={`text-sm ${state.success ? 'text-emerald-600' : 'text-red-600'}`}>{state.message}</p>}
-      <Button type="submit" disabled={pending}>{pending ? 'Speichern...' : 'Gerät speichern'}</Button>
+      <Button type="submit" disabled={pending}>{pending ? 'Speichern...' : 'Maschine speichern'}</Button>
     </form>
   )
 }

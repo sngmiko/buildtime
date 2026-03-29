@@ -384,7 +384,7 @@ export async function createEmployee(
   const admin = createAdminClient()
 
   // Generate a placeholder email that won't conflict
-  const placeholder = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@buildtime.internal`
+  const placeholder = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@nomadworks.internal`
   const guestToken = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
 
   const { data: authUser, error: authError } = await admin.auth.admin.createUser({

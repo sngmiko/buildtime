@@ -47,7 +47,7 @@ export default async function BautagebuchPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Bautagebuch</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Bautagesbericht</h1>
           <p className="mt-0.5 text-sm text-slate-500">
             {activeSite ? activeSite.name : 'Alle Baustellen'}
           </p>
@@ -87,14 +87,14 @@ export default async function BautagebuchPage({
 
       {entries && entries.length > 0 && entries.length <= 2 && (
         <TipBanner tipKey="diary_weather" dismissed={dismissedTips.has('diary_weather')}>
-          Tipp: Klicken Sie auf &apos;Wetter laden&apos; — BuildTime holt das aktuelle Wetter automatisch per GPS und füllt die Felder für Sie.
+          Tipp: Klicken Sie auf &apos;Wetter laden&apos; — NomadWorks holt das aktuelle Wetter automatisch per GPS und füllt die Felder für Sie.
         </TipBanner>
       )}
 
       {(!entries || entries.length === 0) ? (
         <EmptyState
           icon={BookOpen}
-          title="Ihr Bautagebuch"
+          title="Ihr Bautagesbericht"
           description="Dokumentieren Sie täglich den Fortschritt auf Ihren Baustellen. Wetter, Arbeiten, Vorkommnisse und Mängel — alles an einem Ort."
           actionLabel="Ersten Eintrag erstellen"
           actionHref="/bautagebuch/neu"

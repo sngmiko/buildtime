@@ -24,7 +24,7 @@ export function AcceptInviteForm({
   return (
     <form action={action} className="flex flex-col gap-4">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Sie wurden eingeladen, <strong>{companyName}</strong> auf BuildTime beizutreten.
+        Sie wurden eingeladen, <strong>{companyName}</strong> auf NomadWorks beizutreten.
       </p>
       <div className="grid grid-cols-2 gap-3">
         <Input

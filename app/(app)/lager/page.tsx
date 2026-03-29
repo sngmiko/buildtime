@@ -133,7 +133,7 @@ export default async function LagerPage({
         <>
           {materials && materials.length > 0 && materials.length <= 2 && (
             <TipBanner tipKey="inventory_minstock" dismissed={dismissedTips.has('inventory_minstock')}>
-              Tipp: Setzen Sie einen Mindestbestand. BuildTime warnt Sie automatisch wenn Material nachbestellt werden muss.
+              Tipp: Setzen Sie einen Mindestbestand. NomadWorks warnt Sie automatisch wenn Material nachbestellt werden muss.
             </TipBanner>
           )}
           {(!materials || materials.length === 0) ? (

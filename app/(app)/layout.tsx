@@ -53,7 +53,7 @@ export default async function AppLayout({
             {children}
             {!isWorker && (
               <footer className="mt-auto pt-8 text-center text-xs text-slate-400">
-                BuildTime ist ein Produkt von{' '}
+                NomadWorks ist ein Produkt von{' '}
                 <a href="https://nomad-solutions.de" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">
                   Nomad Solutions
                 </a>

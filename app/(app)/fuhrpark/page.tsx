@@ -65,13 +65,13 @@ export default async function FuhrparkPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Fuhrpark & Geräte</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Fuhrpark & Maschinen</h1>
         <div className="flex gap-2">
           <Link href="/fuhrpark/fahrzeug-neu">
             <Button><Plus className="h-4 w-4" /> Fahrzeug</Button>
           </Link>
           <Link href="/fuhrpark/geraet-neu">
-            <Button variant="secondary"><Plus className="h-4 w-4" /> Gerät</Button>
+            <Button variant="secondary"><Plus className="h-4 w-4" /> Maschine</Button>
           </Link>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default async function FuhrparkPage({
             <p className="text-2xl font-bold">{formatCurrency(totalMonthlyCost)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-blue-200">Fahrzeuge / Geräte</p>
+            <p className="text-sm text-blue-200">Fahrzeuge / Maschinen</p>
             <p className="text-2xl font-bold">{vehicleCount} / {equipmentCount}</p>
           </div>
         </div>
@@ -112,7 +112,7 @@ export default async function FuhrparkPage({
           <Truck className="h-4 w-4" /> Fahrzeuge
         </Link>
         <Link href="?tab=equipment" className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'equipment' ? 'bg-[#1e3a5f] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-          <Wrench className="h-4 w-4" /> Geräte
+          <Wrench className="h-4 w-4" /> Maschinen
         </Link>
       </div>
 
@@ -173,7 +173,7 @@ export default async function FuhrparkPage({
             </Link>
           ))}
           {(!equipment || equipment.length === 0) && (
-            <Card className="col-span-full py-8 text-center text-sm text-slate-500">Keine Geräte vorhanden</Card>
+            <Card className="col-span-full py-8 text-center text-sm text-slate-500">Keine Maschinen vorhanden</Card>
           )}
         </div>
       )}

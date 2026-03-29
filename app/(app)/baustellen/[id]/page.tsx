@@ -81,9 +81,9 @@ export default async function SiteDetailPage({
   const TABS = [
     { id: 'overview', label: 'Übersicht' },
     { id: 'zeit', label: 'Zeiterfassung' },
-    { id: 'geraete', label: 'Geräte' },
+    { id: 'geraete', label: 'Maschinen' },
     { id: 'material', label: 'Material' },
-    { id: 'tagebuch', label: 'Bautagebuch' },
+    { id: 'tagebuch', label: 'Bautagesbericht' },
     { id: 'edit', label: 'Bearbeiten' },
   ]
 
@@ -125,7 +125,7 @@ export default async function SiteDetailPage({
         <Card className="p-4 text-center">
           <Package className="mx-auto mb-1 h-5 w-5 text-amber-600" />
           <p className="text-xl font-bold text-slate-900">{(equipment || []).length}</p>
-          <p className="text-xs text-slate-500">Geräte vor Ort</p>
+          <p className="text-xs text-slate-500">Maschinen vor Ort</p>
         </Card>
         <Card className="p-4 text-center">
           <BookOpen className="mx-auto mb-1 h-5 w-5 text-violet-600" />
@@ -218,7 +218,7 @@ export default async function SiteDetailPage({
           <Card className="lg:col-span-2">
             <h3 className="mb-3 text-lg font-semibold text-slate-900">Einstempeln QR-Code</h3>
             {(() => {
-              const stempelUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.buildtime.de'}/stempeln?site=${s.id}`
+              const stempelUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.nomadworks.de'}/stempeln?site=${s.id}`
               const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(stempelUrl)}`
               return (
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -273,9 +273,9 @@ export default async function SiteDetailPage({
 
       {activeTab === 'geraete' && (
         <Card>
-          <h3 className="mb-3 text-lg font-semibold text-slate-900">Geräte auf dieser Baustelle</h3>
+          <h3 className="mb-3 text-lg font-semibold text-slate-900">Maschinen auf dieser Baustelle</h3>
           {(!equipment || equipment.length === 0) ? (
-            <p className="text-sm text-slate-500">Keine Geräte zugewiesen</p>
+            <p className="text-sm text-slate-500">Keine Maschinen zugewiesen</p>
           ) : (
             <div className="divide-y divide-slate-100">
               {equipment.map((eq: { id: string; name: string; category: string; status: string }) => (
@@ -323,7 +323,7 @@ export default async function SiteDetailPage({
       {activeTab === 'tagebuch' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">Bautagebuch</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Bautagesbericht</h3>
             <Link href={`/bautagebuch/neu?site=${id}`}>
               <Button size="sm">Neuer Eintrag</Button>
             </Link>

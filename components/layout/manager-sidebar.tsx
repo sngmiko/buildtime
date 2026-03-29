@@ -29,7 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/fuhrpark', label: 'Fuhrpark', icon: Truck, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/lager', label: 'Lager & Einkauf', icon: Package, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/subunternehmer', label: 'Subunternehmer', icon: UsersRound, roles: ['owner', 'foreman', 'super_admin'] },
-  { href: '/bautagebuch', label: 'Bautagebuch', icon: BookOpen, roles: ['owner', 'foreman', 'super_admin'] },
+  { href: '/bautagebuch', label: 'Bautagesbericht', icon: BookOpen, roles: ['owner', 'foreman', 'super_admin'] },
   { href: '/firma', label: 'Firma', icon: Building2, roles: ['owner', 'super_admin'] },
   { href: '/profil', label: 'Profil', icon: User, roles: ['owner', 'foreman', 'super_admin'] },
 ]
@@ -67,7 +67,7 @@ export function ManagerSidebar({ role }: { role: UserRole }) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f59e0b]">
             <HardHat className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-bold text-white">Build<span className="text-[#f59e0b]">Time</span></span>
+          <span className="text-lg font-bold text-white">Nomad<span className="text-[#f59e0b]">Works</span></span>
         </div>
 
         {/* Search hint */}

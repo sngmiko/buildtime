@@ -9,13 +9,13 @@ export default function PublicLayout({
       <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-[#1e3a5f] p-12 text-white">
         <div>
           <h1 className="text-3xl font-bold">
-            Build<span className="text-[#f59e0b]">Time</span>
+            Nomad<span className="text-[#f59e0b]">Works</span>
           </h1>
         </div>
         <div className="space-y-4">
           <h2 className="text-4xl font-bold leading-tight">
-            Zeiterfassung<br />
-            für die Baustelle.
+            Bau-ERP für<br />
+            moderne Unternehmen.
           </h2>
           <p className="text-xl text-blue-200">
             Digital. Einfach. Sicher.
@@ -46,10 +46,10 @@ export default function PublicLayout({
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
             <h1 className="text-2xl font-bold text-slate-900">
-              Build<span className="text-[#f59e0b]">Time</span>
+              Nomad<span className="text-[#f59e0b]">Works</span>
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              Zeiterfassung für die Baustelle
+              Bau-ERP für moderne Bauunternehmen
             </p>
           </div>
           {children}

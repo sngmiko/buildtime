@@ -117,7 +117,7 @@ export default async function AuftraegePage({
 
       {orders && orders.length > 0 && orders.length <= 2 && (
         <TipBanner tipKey="orders_assign" dismissed={dismissedTips.has('orders_assign')}>
-          Tipp: Weisen Sie dem Auftrag Mitarbeiter, Fahrzeuge und Material zu. BuildTime berechnet automatisch alle Kosten und Ihre Marge.
+          Tipp: Weisen Sie dem Auftrag Mitarbeiter, Fahrzeuge und Material zu. NomadWorks berechnet automatisch alle Kosten und Ihre Marge.
         </TipBanner>
       )}
 
@@ -126,7 +126,7 @@ export default async function AuftraegePage({
         <EmptyState
           icon={Briefcase}
           title="Behalten Sie den Überblick"
-          description="Erstellen Sie Ihren ersten Auftrag und sehen Sie Kosten, Margen und Fortschritt in Echtzeit. BuildTime berechnet automatisch Ihre Personalkosten aus der Zeiterfassung."
+          description="Erstellen Sie Ihren ersten Auftrag und sehen Sie Kosten, Margen und Fortschritt in Echtzeit. NomadWorks berechnet automatisch Ihre Personalkosten aus der Zeiterfassung."
           actionLabel="Ersten Auftrag anlegen"
           actionHref="/auftraege/neu"
         />

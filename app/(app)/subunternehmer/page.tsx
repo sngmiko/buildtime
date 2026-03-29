@@ -83,7 +83,7 @@ export default async function SubunternehmerPage() {
 
       {subs && subs.length > 0 && subs.length <= 2 && (
         <TipBanner tipKey="subs_48b" dismissed={dismissedTips.has('subs_48b')}>
-          Tipp: Hinterlegen Sie das Ablaufdatum der §48b-Freistellungsbescheinigung. BuildTime erinnert Sie 30 Tage vor Ablauf.
+          Tipp: Hinterlegen Sie das Ablaufdatum der §48b-Freistellungsbescheinigung. NomadWorks erinnert Sie 30 Tage vor Ablauf.
         </TipBanner>
       )}
 

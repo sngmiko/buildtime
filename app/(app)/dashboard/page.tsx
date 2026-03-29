@@ -136,7 +136,7 @@ export default async function DashboardPage() {
       {/* NEW COMPANY — Empty state with setup cards */}
       {isNewCompany && (
         <div className="rounded-2xl bg-gradient-to-r from-[#1e3a5f] to-[#2d5f8a] p-8 text-white">
-          <h2 className="text-xl font-bold">Willkommen bei BuildTime!</h2>
+          <h2 className="text-xl font-bold">Willkommen bei NomadWorks!</h2>
           <p className="mt-2 text-blue-200">In 5 Minuten sind Sie startklar. Folgen Sie diesen Schritten:</p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
